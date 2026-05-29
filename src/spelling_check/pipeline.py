@@ -4,11 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Protocol
 
 from spelling_check.alignment import align_tokens_to_chars
-from spelling_check.candidates import (
-    deduplicate_candidates,
-    generate_candidates,
-    generate_word_candidates,
-)
+from spelling_check.candidates import deduplicate_candidates, generate_candidates
 from spelling_check.decision import decide_result
 from spelling_check.models import CandidateCorrection, CorrectionResult
 from spelling_check.risk import (
@@ -33,8 +29,7 @@ class SpellingCheckConfig:
     strong_delta: float = 1.0
     weak_delta: float = 0.3
     margin: float = 0.4
-    trusted_sources: tuple[str, ...] = ("word_lexicon", "char_confusion")
-    word_lexicon_bypass_risk: bool = True
+    trusted_sources: tuple[str, ...] = ("vllm_top_logprob",)
     filter_top_logprob_candidates: bool = True
 
 
@@ -48,9 +43,7 @@ def spelling_check(
         risks, threshold=config.risk_threshold, limit=config.suspicious_limit
     )
 
-    candidates = (
-        generate_word_candidates(text) if config.word_lexicon_bypass_risk else []
-    )
+    candidates = []
     for risk in suspicious:
         candidates.extend(
             generate_candidates(
@@ -58,7 +51,6 @@ def spelling_check(
                 risk,
                 original_tokens,
                 limit=config.candidate_limit,
-                include_word_lexicon=not config.word_lexicon_bypass_risk,
                 filter_top_logprob_candidates=config.filter_top_logprob_candidates,
             )
         )

@@ -81,7 +81,7 @@ class StaticTopLogprobClient:
         }
 
 
-def test_spelling_check_corrects_trusted_candidate() -> None:
+def test_spelling_check_corrects_model_candidate() -> None:
     result = spelling_check(
         "我今天想喝一杯咖非。",
         client=FakeClient(),
@@ -91,6 +91,7 @@ def test_spelling_check_corrects_trusted_candidate() -> None:
     assert result.status == "corrected"
     assert result.corrected_text == "我今天想喝一杯咖啡。"
     assert result.corrections[0].candidate_char == "啡"
+    assert result.corrections[0].source == "vllm_top_logprob"
 
 
 def test_spelling_check_keeps_clean_sentence() -> None:
@@ -133,31 +134,31 @@ def test_top_logprob_filters_non_cjk_candidates() -> None:
     assert [candidate.candidate_char for candidate in candidates] == ["試"]
 
 
-def test_word_lexicon_candidate_bypasses_suspicious_threshold() -> None:
+def test_candidates_depend_on_suspicious_model_alternatives() -> None:
     result = spelling_check(
         "咖非",
         client=StaticTopLogprobClient(char_scores={"非": -8.0, "啡": -0.1}),
         config=SpellingCheckConfig(risk_threshold=99.0, strong_delta=0.5),
     )
 
-    assert result.status == "corrected"
-    assert result.corrected_text == "咖啡"
-    assert result.corrections[0].source == "word_lexicon"
+    assert result.status == "no_error"
+    assert result.corrected_text == "咖非"
+    assert result.corrections == []
 
 
-def test_untrusted_top_logprob_does_not_block_trusted_correction() -> None:
+def test_model_candidate_can_correct_when_delta_and_margin_are_strong() -> None:
     result = spelling_check(
         "車戰",
         client=StaticTopLogprobClient(
-            char_scores={"戰": -8.0, "上": -0.1, "站": -1.0},
-            alternatives={"戰": ["上", "站"]},
+            char_scores={"戰": -8.0, "站": -1.0, "庫": -7.0},
+            alternatives={"戰": ["站", "庫"]},
         ),
         config=SpellingCheckConfig(risk_threshold=7.0, strong_delta=0.5, margin=0.4),
     )
 
     assert result.status == "corrected"
     assert result.corrected_text == "車站"
-    assert result.corrections[0].source == "word_lexicon"
+    assert result.corrections[0].source == "vllm_top_logprob"
 
 
 def test_suspicious_without_candidates_returns_no_error() -> None:
