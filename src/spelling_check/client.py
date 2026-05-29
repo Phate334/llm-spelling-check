@@ -30,16 +30,6 @@ class VllmClient:
         }
         return self._post_completion(payload)
 
-    def complete_next_token(self, prefix: str, logprobs: int) -> dict[str, Any]:
-        payload = {
-            "model": self.model,
-            "prompt": prefix,
-            "max_tokens": 1,
-            "temperature": 0,
-            "logprobs": logprobs,
-        }
-        return self._post_completion(payload)
-
     def _post_completion(self, payload: dict[str, Any]) -> dict[str, Any]:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         headers = {"Content-Type": "application/json"}

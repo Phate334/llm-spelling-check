@@ -29,8 +29,6 @@ class Candidate:
     original_char: str
     candidate_char: str
     source: str
-    original_span: str
-    corrected_span: str
 
 
 @dataclass

@@ -11,7 +11,6 @@ def decide_result(
     strong_delta: float,
     weak_delta: float,
     margin: float,
-    trusted_sources: tuple[str, ...],
 ) -> CorrectionResult:
     if not ranked:
         return CorrectionResult(
@@ -23,32 +22,20 @@ def decide_result(
             suspicious_chars=suspicious,
         )
 
-    trusted_ranked = [
-        correction for correction in ranked if correction.source in trusted_sources
-    ]
-    best_trusted = trusted_ranked[0] if trusted_ranked else None
-    second_trusted = trusted_ranked[1] if len(trusted_ranked) > 1 else None
-    clear_trusted_margin = best_trusted is not None and (
-        second_trusted is None or best_trusted.delta - second_trusted.delta >= margin
-    )
+    best = ranked[0]
+    second = ranked[1] if len(ranked) > 1 else None
+    clear_margin = second is None or best.delta - second.delta >= margin
 
-    if (
-        best_trusted is not None
-        and best_trusted.delta >= strong_delta
-        and clear_trusted_margin
-    ):
+    if best.delta >= strong_delta and clear_margin:
         return CorrectionResult(
             input=text,
             status="corrected",
             confidence="high",
-            corrected_text=replace_char(
-                text, best_trusted.index, best_trusted.candidate_char
-            ),
-            corrections=[best_trusted],
+            corrected_text=replace_char(text, best.index, best.candidate_char),
+            corrections=[best],
             suspicious_chars=suspicious,
         )
 
-    best = ranked[0]
     if best.delta >= weak_delta:
         return CorrectionResult(
             input=text,

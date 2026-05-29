@@ -4,13 +4,9 @@ from dataclasses import dataclass
 from typing import Any, Protocol
 
 from spelling_check.alignment import align_tokens_to_chars
-from spelling_check.candidates import (
-    deduplicate_candidates,
-    generate_candidates,
-    generate_next_token_candidates,
-)
+from spelling_check.candidates import generate_candidates
 from spelling_check.decision import decide_result
-from spelling_check.models import CandidateCorrection, CorrectionResult
+from spelling_check.models import Candidate, CandidateCorrection, CorrectionResult
 from spelling_check.risk import (
     compute_char_risks,
     mean_logprob_per_char,
@@ -21,8 +17,6 @@ from spelling_check.text import local_window, replace_char
 
 class PromptScorer(Protocol):
     def score_prompt(self, text: str, prompt_logprobs: int) -> dict[str, Any]: ...
-
-    def complete_next_token(self, prefix: str, logprobs: int) -> dict[str, Any]: ...
 
 
 @dataclass
@@ -35,9 +29,7 @@ class SpellingCheckConfig:
     strong_delta: float = 1.0
     weak_delta: float = 0.3
     margin: float = 0.4
-    trusted_sources: tuple[str, ...] = ("next_token_decode", "vllm_top_logprob")
     filter_top_logprob_candidates: bool = True
-    next_token_logprobs: int = 10
 
 
 def spelling_check(
@@ -54,30 +46,16 @@ def spelling_check(
     for risk in suspicious:
         candidates.extend(
             generate_candidates(
-                text,
                 risk,
                 original_tokens,
                 limit=config.candidate_limit,
                 filter_top_logprob_candidates=config.filter_top_logprob_candidates,
             )
         )
-        if risk.index == 0:
-            continue
-        next_token_response = client.complete_next_token(
-            text[: risk.index],
-            config.next_token_logprobs,
-        )
-        candidates.extend(
-            generate_next_token_candidates(
-                risk,
-                next_token_response,
-                limit=config.candidate_limit,
-            )
-        )
 
     corrections: list[CandidateCorrection] = []
     window_score_cache: dict[str, float] = {}
-    for candidate in deduplicate_candidates(candidates):
+    for candidate in _deduplicate_candidates(candidates):
         original_window = local_window(text, candidate.index, config.window_radius)
         original_score = _score_window(
             original_window, client, config, window_score_cache
@@ -100,8 +78,8 @@ def spelling_check(
                 original_score=original_score,
                 candidate_score=candidate_score,
                 delta=candidate_score - original_score,
-                original_span=candidate.original_span,
-                corrected_span=candidate.corrected_span,
+                original_span=candidate.original_char,
+                corrected_span=candidate.candidate_char,
             )
         )
 
@@ -113,7 +91,6 @@ def spelling_check(
         strong_delta=config.strong_delta,
         weak_delta=config.weak_delta,
         margin=config.margin,
-        trusted_sources=config.trusted_sources,
     )
 
 
@@ -128,3 +105,15 @@ def _score_window(
         tokens = align_tokens_to_chars(window, response)
         cache[window] = mean_logprob_per_char(window, tokens)
     return cache[window]
+
+
+def _deduplicate_candidates(candidates: list[Candidate]) -> list[Candidate]:
+    seen: set[tuple[int, str]] = set()
+    deduped: list[Candidate] = []
+    for candidate in candidates:
+        key = (candidate.index, candidate.candidate_char)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(candidate)
+    return deduped

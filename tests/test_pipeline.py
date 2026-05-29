@@ -8,9 +8,6 @@ from spelling_check.pipeline import SpellingCheckConfig, spelling_check
 
 
 class FakeClient:
-    def complete_next_token(self, prefix: str, logprobs: int) -> dict[str, Any]:
-        return _completion_response("啡", ["啡"])
-
     def score_prompt(self, text: str, prompt_logprobs: int) -> dict[str, Any]:
         prompt_logprobs_payload = []
         prompt_token_ids = []
@@ -83,44 +80,6 @@ class StaticTopLogprobClient:
             ]
         }
 
-    def complete_next_token(self, prefix: str, logprobs: int) -> dict[str, Any]:
-        del logprobs
-        return _completion_response("", [])
-
-
-class StaticNextTokenClient(StaticTopLogprobClient):
-    def __init__(
-        self,
-        *,
-        char_scores: dict[str, float],
-        next_tokens: dict[str, list[str]],
-    ) -> None:
-        super().__init__(char_scores=char_scores)
-        self.next_tokens = next_tokens
-
-    def complete_next_token(self, prefix: str, logprobs: int) -> dict[str, Any]:
-        del logprobs
-        tokens = self.next_tokens.get(prefix, [])
-        generated = tokens[0] if tokens else ""
-        return _completion_response(generated, tokens)
-
-
-def _completion_response(text: str, top_tokens: list[str]) -> dict[str, Any]:
-    return {
-        "choices": [
-            {
-                "text": text,
-                "logprobs": {
-                    "tokens": [text] if text else [],
-                    "token_logprobs": [-0.1] if text else [],
-                    "top_logprobs": [
-                        {token: -0.1 - index for index, token in enumerate(top_tokens)}
-                    ],
-                },
-            }
-        ]
-    }
-
 
 def test_spelling_check_corrects_model_candidate() -> None:
     result = spelling_check(
@@ -170,7 +129,7 @@ def test_top_logprob_filters_non_cjk_candidates() -> None:
         ],
     )
 
-    candidates = generate_candidates("測", risk, [token], limit=10)
+    candidates = generate_candidates(risk, [token], limit=10)
 
     assert [candidate.candidate_char for candidate in candidates] == ["試"]
 
@@ -187,19 +146,19 @@ def test_candidates_depend_on_suspicious_model_alternatives() -> None:
     assert result.corrections == []
 
 
-def test_next_token_candidate_can_correct_when_delta_and_margin_are_strong() -> None:
+def test_top_logprob_candidate_can_correct_when_delta_and_margin_are_strong() -> None:
     result = spelling_check(
         "車戰",
-        client=StaticNextTokenClient(
+        client=StaticTopLogprobClient(
             char_scores={"戰": -8.0, "站": -1.0, "庫": -7.0},
-            next_tokens={"車": ["站", "庫"]},
+            alternatives={"戰": ["站", "庫"]},
         ),
         config=SpellingCheckConfig(risk_threshold=7.0, strong_delta=0.5, margin=0.4),
     )
 
     assert result.status == "corrected"
     assert result.corrected_text == "車站"
-    assert result.corrections[0].source == "next_token_decode"
+    assert result.corrections[0].source == "vllm_top_logprob"
 
 
 def test_suspicious_without_candidates_returns_no_error() -> None:
