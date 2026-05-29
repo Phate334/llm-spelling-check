@@ -12,7 +12,9 @@ from spelling_check.pipeline import SpellingCheckConfig, spelling_check
 
 DEFAULT_BASE_URL = "http://localhost:8000/v1"
 DEFAULT_MODEL = "google/gemma-4-E4B"
-DEFAULT_SAMPLE_FILE = Path(__file__).resolve().parents[2] / "data" / "sample_sentences.json"
+DEFAULT_SAMPLE_FILE = (
+    Path(__file__).resolve().parents[2] / "data" / "sample_sentences.json"
+)
 
 
 def main() -> int:
@@ -28,6 +30,8 @@ def main() -> int:
         risk_threshold=args.risk_threshold,
         suspicious_limit=args.suspicious_limit,
         candidate_limit=args.candidate_limit,
+        fim_candidate_limit=args.fim_candidate_limit,
+        fim_max_tokens=args.fim_max_tokens,
         window_radius=args.window_radius,
         strong_delta=args.strong_delta,
         weak_delta=args.weak_delta,
@@ -44,18 +48,35 @@ def main() -> int:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Chinese spelling check POC using vLLM prompt logprobs.")
+    parser = argparse.ArgumentParser(
+        description="Chinese spelling check POC using vLLM prompt logprobs."
+    )
     parser.add_argument("texts", nargs="*", help="input sentences")
-    parser.add_argument("--input-file", type=Path, help="JSON array or newline-delimited text input")
-    parser.add_argument("--use-samples", action="store_true", help="run data/sample_sentences.json")
-    parser.add_argument("--base-url", default=os.getenv("SPELLING_BASE_URL", DEFAULT_BASE_URL))
+    parser.add_argument(
+        "--input-file", type=Path, help="JSON array or newline-delimited text input"
+    )
+    parser.add_argument(
+        "--use-samples", action="store_true", help="run data/sample_sentences.json"
+    )
+    parser.add_argument(
+        "--base-url", default=os.getenv("SPELLING_BASE_URL", DEFAULT_BASE_URL)
+    )
     parser.add_argument("--model", default=os.getenv("SPELLING_MODEL", DEFAULT_MODEL))
     parser.add_argument("--api-key", default=os.getenv("SPELLING_API_KEY"))
-    parser.add_argument("--timeout", type=float, default=float(os.getenv("SPELLING_TIMEOUT", "30")))
+    parser.add_argument(
+        "--timeout", type=float, default=float(os.getenv("SPELLING_TIMEOUT", "30"))
+    )
     parser.add_argument("--prompt-logprobs", type=int, default=5)
     parser.add_argument("--risk-threshold", type=float, default=7.0)
     parser.add_argument("--suspicious-limit", type=int, default=5)
     parser.add_argument("--candidate-limit", type=int, default=8)
+    parser.add_argument(
+        "--fim-candidate-limit",
+        type=int,
+        default=0,
+        help="number of FIM structured candidates to include; 0 disables FIM",
+    )
+    parser.add_argument("--fim-max-tokens", type=int, default=96)
     parser.add_argument("--window-radius", type=int, default=12)
     parser.add_argument("--strong-delta", type=float, default=1.0)
     parser.add_argument("--weak-delta", type=float, default=0.3)
@@ -101,7 +122,9 @@ def print_human(result: CorrectionResult) -> None:
     if result.suspicious_chars:
         print("疑似錯字:")
         for risk in result.suspicious_chars:
-            print(f"  {risk.index}: {risk.char} risk={risk.risk_score:.4f} ({risk.reason})")
+            print(
+                f"  {risk.index}: {risk.char} risk={risk.risk_score:.4f} ({risk.reason})"
+            )
 
 
 if __name__ == "__main__":

@@ -30,6 +30,29 @@ class VllmClient:
         }
         return self._post_completion(payload)
 
+    def complete_json_array(self, prompt: str, max_tokens: int) -> str:
+        payload = {
+            "model": self.model,
+            "prompt": prompt,
+            "max_tokens": max_tokens,
+            "temperature": 0,
+            "structured_outputs": {
+                "json": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1,
+                        "pattern": "^[\\u4e00-\\u9fff]$",
+                    },
+                    "minItems": 1,
+                    "maxItems": 8,
+                }
+            },
+        }
+        response = self._post_completion(payload)
+        return str(response["choices"][0].get("text") or "")
+
     def _post_completion(self, payload: dict[str, Any]) -> dict[str, Any]:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         headers = {"Content-Type": "application/json"}

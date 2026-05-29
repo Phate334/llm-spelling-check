@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.2
+
+- 新增 `fim_structured_output` 候選來源，透過 local window 挖空目標字並要求 vLLM Structured Outputs 回傳 JSON array 單字候選。
+- `VllmClient` 與 pipeline 新增 FIM 候選整合流程，CLI 可用 `--fim-candidate-limit`、`--fim-max-tokens` 控制。
+- 預設仍只使用 `vllm_top_logprob`；FIM 改為可選的補充候選來源，避免直接增加成本與不穩定性。
+- 升級專案版本到 `0.2.2`。
+- 新增 `docs/v0.2.2/` 多模型測試報告與 `*-calls.jsonl`，累計紀錄 vLLM request/response I/O。
+- 結論：FIM 能補到少數 top-logprob 找不到的候選，但整體 corrected 數沒有改善，不適合作為預設主策略。
+
 ## v0.2.1
 
 - 新增 prefix next-token decoding 候選來源。

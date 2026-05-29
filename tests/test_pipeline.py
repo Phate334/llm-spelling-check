@@ -38,6 +38,9 @@ class FakeClient:
             ]
         }
 
+    def complete_json_array(self, prompt: str, max_tokens: int) -> str:
+        return "[]"
+
 
 class StaticTopLogprobClient:
     def __init__(
@@ -48,6 +51,7 @@ class StaticTopLogprobClient:
     ) -> None:
         self.char_scores = char_scores
         self.alternatives = alternatives or {}
+        self.fim_candidates: dict[str, list[str]] = {}
 
     def score_prompt(self, text: str, prompt_logprobs: int) -> dict[str, Any]:
         prompt_logprobs_payload = []
@@ -79,6 +83,30 @@ class StaticTopLogprobClient:
                 }
             ]
         }
+
+    def complete_json_array(self, prompt: str, max_tokens: int) -> str:
+        for key, candidates in self.fim_candidates.items():
+            if key in prompt:
+                return json_array(candidates)
+        return "[]"
+
+
+class StaticFimClient(StaticTopLogprobClient):
+    def __init__(
+        self,
+        *,
+        char_scores: dict[str, float],
+        alternatives: dict[str, list[str]] | None = None,
+        fim_candidates: dict[str, list[str]] | None = None,
+    ) -> None:
+        super().__init__(char_scores=char_scores, alternatives=alternatives)
+        self.fim_candidates = fim_candidates or {}
+
+
+def json_array(values: list[str]) -> str:
+    import json
+
+    return json.dumps(values, ensure_ascii=False)
 
 
 def test_spelling_check_corrects_model_candidate() -> None:
@@ -161,6 +189,41 @@ def test_top_logprob_candidate_can_correct_when_delta_and_margin_are_strong() ->
     assert result.corrections[0].source == "vllm_top_logprob"
 
 
+def test_default_config_does_not_use_fim_candidates() -> None:
+    result = spelling_check(
+        "去公圜散步",
+        client=StaticFimClient(
+            char_scores={"圜": -8.0, "園": -0.1, "廁": -7.0},
+            alternatives={"圜": ["廁"]},
+            fim_candidates={"去公[圜]散步": ["園"]},
+        ),
+        config=SpellingCheckConfig(risk_threshold=7.0, strong_delta=0.5, margin=0.4),
+    )
+
+    assert result.status == "no_error"
+    assert result.corrected_text == "去公圜散步"
+    assert all(
+        correction.source == "vllm_top_logprob" for correction in result.corrections
+    )
+
+
+def test_fim_candidate_can_correct_when_top_logprob_misses_candidate() -> None:
+    result = spelling_check(
+        "去公圜散步",
+        client=StaticFimClient(
+            char_scores={"圜": -8.0, "園": -0.1, "廁": -7.0},
+            alternatives={"圜": ["廁"]},
+            fim_candidates={"去公[圜]散步": ["園"]},
+        ),
+        config=SpellingCheckConfig(risk_threshold=7.0, strong_delta=0.5, margin=0.4),
+    )
+
+    assert result.status == "corrected"
+    assert result.corrected_text == "去公園散步"
+    assert result.corrections[0].candidate_char == "園"
+    assert result.corrections[0].source == "fim_structured_output"
+
+
 def test_suspicious_without_candidates_returns_no_error() -> None:
     result = spelling_check(
         "測",
@@ -168,7 +231,7 @@ def test_suspicious_without_candidates_returns_no_error() -> None:
             char_scores={"測": -8.0},
             alternatives={"測": ["T", "#", "_", "가"]},
         ),
-        config=SpellingCheckConfig(risk_threshold=7.0),
+        config=SpellingCheckConfig(risk_threshold=7.0, fim_candidate_limit=0),
     )
 
     assert result.status == "no_error"

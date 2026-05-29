@@ -6,6 +6,10 @@ from typing import Any, Protocol
 from spelling_check.alignment import align_tokens_to_chars
 from spelling_check.candidates import generate_candidates
 from spelling_check.decision import decide_result
+from spelling_check.fim_candidates import (
+    StructuredCandidateClient,
+    generate_fim_candidates,
+)
 from spelling_check.models import Candidate, CandidateCorrection, CorrectionResult
 from spelling_check.risk import (
     compute_char_risks,
@@ -19,12 +23,18 @@ class PromptScorer(Protocol):
     def score_prompt(self, text: str, prompt_logprobs: int) -> dict[str, Any]: ...
 
 
+class SpellingCheckClient(PromptScorer, StructuredCandidateClient, Protocol):
+    pass
+
+
 @dataclass
 class SpellingCheckConfig:
     prompt_logprobs: int = 5
     risk_threshold: float = 7.0
     suspicious_limit: int = 5
     candidate_limit: int = 8
+    fim_candidate_limit: int = 0
+    fim_max_tokens: int = 96
     window_radius: int = 12
     strong_delta: float = 1.0
     weak_delta: float = 0.3
@@ -32,7 +42,7 @@ class SpellingCheckConfig:
 
 
 def spelling_check(
-    text: str, client: PromptScorer, config: SpellingCheckConfig
+    text: str, client: SpellingCheckClient, config: SpellingCheckConfig
 ) -> CorrectionResult:
     original_response = client.score_prompt(text, config.prompt_logprobs)
     original_tokens = align_tokens_to_chars(text, original_response)
@@ -50,6 +60,17 @@ def spelling_check(
                 limit=config.candidate_limit,
             )
         )
+        if config.fim_candidate_limit > 0:
+            candidates.extend(
+                generate_fim_candidates(
+                    text,
+                    risk,
+                    client,
+                    window_radius=config.window_radius,
+                    limit=config.fim_candidate_limit,
+                    max_tokens=config.fim_max_tokens,
+                )
+            )
 
     corrections: list[CandidateCorrection] = []
     window_score_cache: dict[str, float] = {}
