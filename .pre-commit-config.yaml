@@ -29,4 +29,3 @@ repos:
     rev: v1.15.0
     hooks:
       - id: mypy
-        additional_dependencies: [pydantic>=2.12.4, pydantic-settings>=2.12.0]
