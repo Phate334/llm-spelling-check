@@ -19,16 +19,6 @@ class PromptScorer(Protocol):
     def score_prompt(self, text: str, prompt_logprobs: int) -> dict[str, Any]: ...
 
 
-class BatchPromptScorer(PromptScorer, Protocol):
-    def score_prompts(
-        self, texts: list[str], prompt_logprobs: int
-    ) -> list[dict[str, Any]]: ...
-
-
-class SpellingCheckClient(PromptScorer, Protocol):
-    pass
-
-
 @dataclass
 class SpellingCheckConfig:
     prompt_logprobs: int = 5
@@ -43,7 +33,7 @@ class SpellingCheckConfig:
 
 
 def spelling_check(
-    text: str, client: SpellingCheckClient, config: SpellingCheckConfig
+    text: str, client: PromptScorer, config: SpellingCheckConfig
 ) -> CorrectionResult:
     original_response = client.score_prompt(text, config.prompt_logprobs)
     original_tokens = align_tokens_to_chars(text, original_response)

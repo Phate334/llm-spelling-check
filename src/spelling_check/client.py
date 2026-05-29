@@ -63,6 +63,13 @@ def _split_completion_response(
     response: dict[str, Any], expected_count: int
 ) -> list[dict[str, Any]]:
     choices = response.get("choices") or []
+    if not isinstance(choices, list):
+        raise RuntimeError("vLLM response choices must be a list")
+    if len(choices) != expected_count:
+        raise RuntimeError(
+            "vLLM response choice count mismatch: "
+            f"expected {expected_count}, got {len(choices)}"
+        )
     if expected_count == 1:
         return [response]
 

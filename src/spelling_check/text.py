@@ -25,9 +25,3 @@ def local_window(text: str, index: int, radius: int) -> str:
     start = max(0, index - radius)
     end = min(len(text), index + radius + 1)
     return text[start:end]
-
-
-def local_window_with_offset(text: str, index: int, radius: int) -> tuple[str, int]:
-    start = max(0, index - radius)
-    end = min(len(text), index + radius + 1)
-    return text[start:end], index - start
