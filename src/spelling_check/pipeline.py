@@ -6,10 +6,6 @@ from typing import Any, Protocol
 from spelling_check.alignment import align_tokens_to_chars
 from spelling_check.candidates import generate_candidates
 from spelling_check.decision import decide_result
-from spelling_check.fim_candidates import (
-    StructuredCandidateClient,
-    generate_fim_candidates,
-)
 from spelling_check.models import Candidate, CandidateCorrection, CorrectionResult
 from spelling_check.risk import (
     compute_char_risks,
@@ -23,7 +19,13 @@ class PromptScorer(Protocol):
     def score_prompt(self, text: str, prompt_logprobs: int) -> dict[str, Any]: ...
 
 
-class SpellingCheckClient(PromptScorer, StructuredCandidateClient, Protocol):
+class BatchPromptScorer(PromptScorer, Protocol):
+    def score_prompts(
+        self, texts: list[str], prompt_logprobs: int
+    ) -> list[dict[str, Any]]: ...
+
+
+class SpellingCheckClient(PromptScorer, Protocol):
     pass
 
 
@@ -33,9 +35,8 @@ class SpellingCheckConfig:
     risk_threshold: float = 7.0
     suspicious_limit: int = 5
     candidate_limit: int = 8
-    fim_candidate_limit: int = 0
-    fim_max_tokens: int = 96
     window_radius: int = 12
+    score_batch_size: int = 1
     strong_delta: float = 1.0
     weak_delta: float = 0.3
     margin: float = 0.4
@@ -60,32 +61,29 @@ def spelling_check(
                 limit=config.candidate_limit,
             )
         )
-        if config.fim_candidate_limit > 0:
-            candidates.extend(
-                generate_fim_candidates(
-                    text,
-                    risk,
-                    client,
-                    window_radius=config.window_radius,
-                    limit=config.fim_candidate_limit,
-                    max_tokens=config.fim_max_tokens,
-                )
-            )
 
     corrections: list[CandidateCorrection] = []
     window_score_cache: dict[str, float] = {}
-    for candidate in _deduplicate_candidates(candidates):
+    deduped_candidates = _deduplicate_candidates(candidates)
+    windows_to_score = []
+    for candidate in deduped_candidates:
         original_window = local_window(text, candidate.index, config.window_radius)
-        original_score = _score_window(
-            original_window, client, config, window_score_cache
-        )
         candidate_text = replace_char(text, candidate.index, candidate.candidate_char)
         candidate_window = local_window(
             candidate_text, candidate.index, config.window_radius
         )
-        candidate_score = _score_window(
-            candidate_window, client, config, window_score_cache
+        windows_to_score.extend([original_window, candidate_window])
+
+    _score_windows(windows_to_score, client, config, window_score_cache)
+
+    for candidate in deduped_candidates:
+        original_window = local_window(text, candidate.index, config.window_radius)
+        candidate_text = replace_char(text, candidate.index, candidate.candidate_char)
+        candidate_window = local_window(
+            candidate_text, candidate.index, config.window_radius
         )
+        original_score = window_score_cache[original_window]
+        candidate_score = window_score_cache[candidate_window]
         corrections.append(
             CandidateCorrection(
                 index=candidate.index,
@@ -113,17 +111,29 @@ def spelling_check(
     )
 
 
-def _score_window(
-    window: str,
+def _score_windows(
+    windows: list[str],
     client: PromptScorer,
     config: SpellingCheckConfig,
     cache: dict[str, float],
-) -> float:
-    if window not in cache:
-        response = client.score_prompt(window, config.prompt_logprobs)
-        tokens = align_tokens_to_chars(window, response)
-        cache[window] = mean_logprob_per_char(window, tokens)
-    return cache[window]
+) -> None:
+    missing = list(dict.fromkeys(window for window in windows if window not in cache))
+    batch_size = max(1, config.score_batch_size)
+    for start in range(0, len(missing), batch_size):
+        batch = missing[start : start + batch_size]
+        responses = _score_prompt_batch(client, batch, config.prompt_logprobs)
+        for window, response in zip(batch, responses, strict=True):
+            tokens = align_tokens_to_chars(window, response)
+            cache[window] = mean_logprob_per_char(window, tokens)
+
+
+def _score_prompt_batch(
+    client: PromptScorer, windows: list[str], prompt_logprobs: int
+) -> list[dict[str, Any]]:
+    score_prompts = getattr(client, "score_prompts", None)
+    if callable(score_prompts) and len(windows) > 1:
+        return list(score_prompts(windows, prompt_logprobs))
+    return [client.score_prompt(window, prompt_logprobs) for window in windows]
 
 
 def _deduplicate_candidates(candidates: list[Candidate]) -> list[Candidate]:

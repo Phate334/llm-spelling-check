@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.3
+
+- 移除 FIM / Structured Outputs candidate path，候選來源回到單一 `vllm_top_logprob` baseline。
+- 移除 CLI 的 `--fim-candidate-limit`、`--fim-max-tokens`。
+- 新增 scoring batch path 與 `--score-batch-size`，預設值為 `1`。
+- 新增 CSC metrics helper，可計算 Detection Precision / Recall / F1、Correction Precision / Recall / F1、False Positive Rate。
+- 升級專案版本到 `0.2.3`。
+
 ## v0.2.2
 
 - 新增 `fim_structured_output` 候選來源，透過 local window 挖空目標字並要求 vLLM Structured Outputs 回傳 JSON array 單字候選。

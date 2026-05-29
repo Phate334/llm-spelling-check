@@ -30,9 +30,8 @@ def main() -> int:
         risk_threshold=args.risk_threshold,
         suspicious_limit=args.suspicious_limit,
         candidate_limit=args.candidate_limit,
-        fim_candidate_limit=args.fim_candidate_limit,
-        fim_max_tokens=args.fim_max_tokens,
         window_radius=args.window_radius,
+        score_batch_size=args.score_batch_size,
         strong_delta=args.strong_delta,
         weak_delta=args.weak_delta,
         margin=args.margin,
@@ -70,14 +69,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--risk-threshold", type=float, default=7.0)
     parser.add_argument("--suspicious-limit", type=int, default=5)
     parser.add_argument("--candidate-limit", type=int, default=8)
-    parser.add_argument(
-        "--fim-candidate-limit",
-        type=int,
-        default=0,
-        help="number of FIM structured candidates to include; 0 disables FIM",
-    )
-    parser.add_argument("--fim-max-tokens", type=int, default=96)
     parser.add_argument("--window-radius", type=int, default=12)
+    parser.add_argument("--score-batch-size", type=int, default=1)
     parser.add_argument("--strong-delta", type=float, default=1.0)
     parser.add_argument("--weak-delta", type=float, default=0.3)
     parser.add_argument("--margin", type=float, default=0.4)

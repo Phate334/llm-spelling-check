@@ -20,38 +20,23 @@ class VllmClient:
         self.timeout = timeout
 
     def score_prompt(self, text: str, prompt_logprobs: int) -> dict[str, Any]:
+        return self.score_prompts([text], prompt_logprobs)[0]
+
+    def score_prompts(
+        self, texts: list[str], prompt_logprobs: int
+    ) -> list[dict[str, Any]]:
+        if not texts:
+            return []
         payload = {
             "model": self.model,
-            "prompt": text,
+            "prompt": texts[0] if len(texts) == 1 else texts,
             "max_tokens": 1,
             "temperature": 0,
             "prompt_logprobs": prompt_logprobs,
             "logprobs": 1,
         }
-        return self._post_completion(payload)
-
-    def complete_json_array(self, prompt: str, max_tokens: int) -> str:
-        payload = {
-            "model": self.model,
-            "prompt": prompt,
-            "max_tokens": max_tokens,
-            "temperature": 0,
-            "structured_outputs": {
-                "json": {
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "minLength": 1,
-                        "maxLength": 1,
-                        "pattern": "^[\\u4e00-\\u9fff]$",
-                    },
-                    "minItems": 1,
-                    "maxItems": 8,
-                }
-            },
-        }
         response = self._post_completion(payload)
-        return str(response["choices"][0].get("text") or "")
+        return _split_completion_response(response, len(texts))
 
     def _post_completion(self, payload: dict[str, Any]) -> dict[str, Any]:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -72,3 +57,25 @@ class VllmClient:
             raise RuntimeError(f"vLLM request failed: HTTP {exc.code}: {detail}")
         except URLError as exc:
             raise RuntimeError(f"vLLM request failed: {exc.reason}")
+
+
+def _split_completion_response(
+    response: dict[str, Any], expected_count: int
+) -> list[dict[str, Any]]:
+    choices = response.get("choices") or []
+    if expected_count == 1:
+        return [response]
+
+    indexed_choices = sorted(
+        enumerate(choices),
+        key=lambda item: (
+            item[1].get("index", item[0]) if isinstance(item[1], dict) else item[0]
+        ),
+    )
+    return [
+        {
+            **response,
+            "choices": [choice],
+        }
+        for _, choice in indexed_choices
+    ]

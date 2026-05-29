@@ -32,6 +32,7 @@ docker compose up vllm
 - 使用內建測試資料 `data/sample_sentences.json`
 - 輸出一般文字或 JSON Lines
 - 調整 vLLM endpoint、模型名稱、risk threshold、修正決策門檻
+- 調整 vLLM scoring batch size；預設 `1`
 
 ## 執行範例
 
@@ -68,11 +69,16 @@ uv run spelling-check \
   --base-url http://localhost:8000/v1 \
   --model google/gemma-4-E4B \
   --risk-threshold 7.0 \
+  --score-batch-size 1 \
   --strong-delta 1.0 \
   --weak-delta 0.3 \
   --margin 0.4 \
   "這間飯店的服誤一直都很好。"
 ```
+
+## v0.2.3 baseline
+
+v0.2.3 移除 FIM / Structured Outputs candidate path，預設候選來源只保留 `vllm_top_logprob`。`--score-batch-size` 可以讓使用者自行提高同批送到 vLLM `/completions` 的 scoring prompt 數；預設為 `1`，保留最保守的逐筆 request 行為。
 
 可用環境變數：
 
