@@ -29,7 +29,6 @@ class SpellingCheckConfig:
     strong_delta: float = 1.0
     weak_delta: float = 0.3
     margin: float = 0.4
-    filter_top_logprob_candidates: bool = True
 
 
 def spelling_check(
@@ -49,7 +48,6 @@ def spelling_check(
                 risk,
                 original_tokens,
                 limit=config.candidate_limit,
-                filter_top_logprob_candidates=config.filter_top_logprob_candidates,
             )
         )
 

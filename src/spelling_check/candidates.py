@@ -8,8 +8,6 @@ def generate_candidates(
     risk: CharRisk,
     tokens: list[TokenScore],
     limit: int,
-    *,
-    filter_top_logprob_candidates: bool = True,
 ) -> list[Candidate]:
     candidates: list[Candidate] = []
     for token in tokens:
@@ -19,9 +17,7 @@ def generate_candidates(
             alt_text = clean_token_text(str(alternative["token"]))
             if alt_text == risk.char:
                 continue
-            if filter_top_logprob_candidates and not is_single_cjk_char(alt_text):
-                continue
-            if not filter_top_logprob_candidates and len(alt_text) != 1:
+            if not is_single_cjk_char(alt_text):
                 continue
             candidates.append(
                 Candidate(
