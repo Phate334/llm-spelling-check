@@ -10,8 +10,8 @@ services:
     volumes:
       - ${HOME}/.cache:/root/.cache
     command: >-
-      google/gemma-3-1b-pt
-      --served-model-name google/gemma-3-1b-pt
+      google/gemma-4-E4B
+      --served-model-name google/gemma-4-E4B
       --host 0.0.0.0
       --language-model-only
       --max-model-len 8192

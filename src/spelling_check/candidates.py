@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from spelling_check.models import Candidate, CharRisk, TokenScore
 from spelling_check.text import clean_token_text, is_single_cjk_char
 
@@ -18,6 +20,29 @@ def generate_candidates(
         tokens,
         filter_candidates=filter_top_logprob_candidates,
     )
+    return deduplicate_candidates(candidates)[:limit]
+
+
+def generate_next_token_candidates(
+    risk: CharRisk,
+    response: dict[str, Any],
+    limit: int,
+) -> list[Candidate]:
+    candidates: list[Candidate] = []
+    for token in _completion_candidate_tokens(response):
+        token_text = clean_token_text(token)
+        if token_text == risk.char or not is_single_cjk_char(token_text):
+            continue
+        candidates.append(
+            Candidate(
+                index=risk.index,
+                original_char=risk.char,
+                candidate_char=token_text,
+                source="next_token_decode",
+                original_span=risk.char,
+                corrected_span=token_text,
+            )
+        )
     return deduplicate_candidates(candidates)[:limit]
 
 
@@ -64,3 +89,18 @@ def deduplicate_candidates(candidates: list[Candidate]) -> list[Candidate]:
         seen.add(key)
         deduped.append(candidate)
     return deduped
+
+
+def _completion_candidate_tokens(response: dict[str, Any]) -> list[str]:
+    choice = response["choices"][0]
+    tokens: list[str] = []
+    generated_text = clean_token_text(str(choice.get("text") or ""))
+    if generated_text:
+        tokens.append(generated_text)
+
+    logprobs = choice.get("logprobs") or {}
+    top_logprobs = logprobs.get("top_logprobs") or []
+    if top_logprobs:
+        first_token_logprobs = top_logprobs[0] or {}
+        tokens.extend(str(token) for token in first_token_logprobs)
+    return tokens

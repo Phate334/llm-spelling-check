@@ -4,7 +4,11 @@ from dataclasses import dataclass
 from typing import Any, Protocol
 
 from spelling_check.alignment import align_tokens_to_chars
-from spelling_check.candidates import deduplicate_candidates, generate_candidates
+from spelling_check.candidates import (
+    deduplicate_candidates,
+    generate_candidates,
+    generate_next_token_candidates,
+)
 from spelling_check.decision import decide_result
 from spelling_check.models import CandidateCorrection, CorrectionResult
 from spelling_check.risk import (
@@ -18,6 +22,8 @@ from spelling_check.text import local_window, replace_char
 class PromptScorer(Protocol):
     def score_prompt(self, text: str, prompt_logprobs: int) -> dict[str, Any]: ...
 
+    def complete_next_token(self, prefix: str, logprobs: int) -> dict[str, Any]: ...
+
 
 @dataclass
 class SpellingCheckConfig:
@@ -29,8 +35,9 @@ class SpellingCheckConfig:
     strong_delta: float = 1.0
     weak_delta: float = 0.3
     margin: float = 0.4
-    trusted_sources: tuple[str, ...] = ("vllm_top_logprob",)
+    trusted_sources: tuple[str, ...] = ("next_token_decode", "vllm_top_logprob")
     filter_top_logprob_candidates: bool = True
+    next_token_logprobs: int = 10
 
 
 def spelling_check(
@@ -52,6 +59,19 @@ def spelling_check(
                 original_tokens,
                 limit=config.candidate_limit,
                 filter_top_logprob_candidates=config.filter_top_logprob_candidates,
+            )
+        )
+        if risk.index == 0:
+            continue
+        next_token_response = client.complete_next_token(
+            text[: risk.index],
+            config.next_token_logprobs,
+        )
+        candidates.extend(
+            generate_next_token_candidates(
+                risk,
+                next_token_response,
+                limit=config.candidate_limit,
             )
         )
 
