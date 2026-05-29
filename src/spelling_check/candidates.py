@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from spelling_check.models import Candidate, CharRisk, TokenScore
-from spelling_check.text import clean_token_text
+from spelling_check.text import clean_token_text, is_single_cjk_char
 
 WORD_CONFUSIONS = {
     "咖非": "咖啡",
@@ -42,13 +42,59 @@ CHAR_CONFUSIONS = {
     "地": ["的", "得"],
 }
 
+SOURCE_PRIORITY = {
+    "word_lexicon": 0,
+    "char_confusion": 1,
+    "vllm_top_logprob": 2,
+}
 
-def generate_candidates(text: str, risk: CharRisk, tokens: list[TokenScore], limit: int) -> list[Candidate]:
+
+def generate_word_candidates(text: str) -> list[Candidate]:
     candidates: list[Candidate] = []
-    candidates.extend(_word_candidates(text, risk.index))
+    for wrong, fixed in WORD_CONFUSIONS.items():
+        start = text.find(wrong)
+        while start >= 0:
+            for offset, (original, candidate) in enumerate(
+                zip(wrong, fixed, strict=False)
+            ):
+                if original == candidate:
+                    continue
+                candidates.append(
+                    Candidate(
+                        index=start + offset,
+                        original_char=original,
+                        candidate_char=candidate,
+                        source="word_lexicon",
+                        original_span=wrong,
+                        corrected_span=fixed,
+                    )
+                )
+            start = text.find(wrong, start + 1)
+    return deduplicate_candidates(candidates)
+
+
+def generate_candidates(
+    text: str,
+    risk: CharRisk,
+    tokens: list[TokenScore],
+    limit: int,
+    *,
+    include_word_lexicon: bool = False,
+    filter_top_logprob_candidates: bool = True,
+) -> list[Candidate]:
+    candidates: list[Candidate] = []
+    if include_word_lexicon:
+        candidates.extend(_word_candidates(text, risk.index))
     candidates.extend(_char_confusion_candidates(text, risk.index))
-    candidates.extend(_top_logprob_candidates(text, risk.index, tokens))
-    return _deduplicate(candidates)[:limit]
+    candidates.extend(
+        _top_logprob_candidates(
+            text,
+            risk.index,
+            tokens,
+            filter_candidates=filter_top_logprob_candidates,
+        )
+    )
+    return deduplicate_candidates(candidates)[:limit]
 
 
 def _word_candidates(text: str, index: int) -> list[Candidate]:
@@ -87,7 +133,13 @@ def _char_confusion_candidates(text: str, index: int) -> list[Candidate]:
     ]
 
 
-def _top_logprob_candidates(text: str, index: int, tokens: list[TokenScore]) -> list[Candidate]:
+def _top_logprob_candidates(
+    text: str,
+    index: int,
+    tokens: list[TokenScore],
+    *,
+    filter_candidates: bool,
+) -> list[Candidate]:
     original = text[index]
     candidates: list[Candidate] = []
     for token in tokens:
@@ -95,27 +147,39 @@ def _top_logprob_candidates(text: str, index: int, tokens: list[TokenScore]) -> 
             continue
         for alternative in token.top_logprobs:
             alt_text = clean_token_text(str(alternative["token"]))
-            if len(alt_text) == 1 and alt_text != original:
-                candidates.append(
-                    Candidate(
-                        index=index,
-                        original_char=original,
-                        candidate_char=alt_text,
-                        source="vllm_top_logprob",
-                        original_span=original,
-                        corrected_span=alt_text,
-                    )
+            if alt_text == original:
+                continue
+            if filter_candidates and not is_single_cjk_char(alt_text):
+                continue
+            if not filter_candidates and len(alt_text) != 1:
+                continue
+            candidates.append(
+                Candidate(
+                    index=index,
+                    original_char=original,
+                    candidate_char=alt_text,
+                    source="vllm_top_logprob",
+                    original_span=original,
+                    corrected_span=alt_text,
                 )
+            )
     return candidates
 
 
-def _deduplicate(candidates: list[Candidate]) -> list[Candidate]:
+def deduplicate_candidates(candidates: list[Candidate]) -> list[Candidate]:
     seen: set[tuple[int, str]] = set()
-    deduped: list[Candidate] = []
+    by_key: dict[tuple[int, str], Candidate] = {}
+    order: list[tuple[int, str]] = []
     for candidate in candidates:
         key = (candidate.index, candidate.candidate_char)
         if key in seen:
+            current = by_key[key]
+            if SOURCE_PRIORITY.get(candidate.source, 99) < SOURCE_PRIORITY.get(
+                current.source, 99
+            ):
+                by_key[key] = candidate
             continue
         seen.add(key)
-        deduped.append(candidate)
-    return deduped
+        by_key[key] = candidate
+        order.append(key)
+    return [by_key[key] for key in order]

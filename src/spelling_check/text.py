@@ -5,6 +5,10 @@ def is_cjk(char: str) -> bool:
     return "\u4e00" <= char <= "\u9fff"
 
 
+def is_single_cjk_char(value: str) -> bool:
+    return len(value) == 1 and is_cjk(value)
+
+
 def is_punctuation_or_space(char: str) -> bool:
     return char.isspace() or char in "，。！？、；：「」『』（）()[]【】,.!?;:'\""
 
