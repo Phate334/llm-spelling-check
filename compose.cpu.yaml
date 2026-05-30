@@ -16,7 +16,7 @@ services:
       - "8001:8000"
     shm_size: "4g"
     environment:
-      HF_TOKEN: "${HF_TOKEN:-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}"
+      HF_TOKEN: "${HF_TOKEN:-}"
     volumes:
       - "${HOME}/.cache/huggingface:/root/.cache/huggingface"
     command: >-
