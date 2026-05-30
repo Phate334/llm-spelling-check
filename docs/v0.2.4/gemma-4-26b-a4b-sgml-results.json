@@ -1,0 +1,1535 @@
+{
+  "model": {
+    "label": "gemma-4-26b-a4b",
+    "requested_model": "google/gemma-4-26b-a4b",
+    "model": "gemma-4-26b-a4b",
+    "base_url": "http://localhost:7072/v1"
+  },
+  "dataset": {
+    "path": "data/fiona_wrong_results_Training.sgml",
+    "format": "sgml",
+    "case_count": 17,
+    "gold_error_count": 24
+  },
+  "config": {
+    "prompt_logprobs": 5,
+    "risk_threshold": 7.0,
+    "suspicious_limit": 5,
+    "candidate_limit": 8,
+    "window_radius": 12,
+    "score_batch_size": 1,
+    "strong_delta": 1.0,
+    "weak_delta": 0.3,
+    "margin": 0.4
+  },
+  "metrics": {
+    "detection_precision": 0.16470588235294117,
+    "detection_recall": 0.5833333333333334,
+    "detection_f1": 0.25688073394495414,
+    "correction_precision": 0.0,
+    "correction_recall": 0.0,
+    "correction_f1": 0.0,
+    "false_positive_rate": 0.2253968253968254,
+    "detected_positions": 85,
+    "gold_error_positions": 24,
+    "correct_detected_positions": 14,
+    "predicted_corrections": 5,
+    "gold_corrections": 24,
+    "correct_corrections": 0,
+    "false_positive_positions": 71,
+    "gold_non_error_positions": 315
+  },
+  "status_counts": {
+    "uncertain": 11,
+    "corrected": 5,
+    "no_error": 1
+  },
+  "vllm_io": {
+    "score_calls": 203,
+    "scored_prompts": 203,
+    "prompts_per_call": 1.0,
+    "input_chars": 26191,
+    "output_chars": 1147950,
+    "input_bytes": 31799,
+    "output_bytes": 1176084,
+    "prompt_tokens": 2433,
+    "completion_tokens": 203,
+    "total_tokens": 2636,
+    "purpose_counts": {
+      "score_original": 17,
+      "score_window": 186
+    }
+  },
+  "calls_file": "gemma-4-26b-a4b-sgml-calls.jsonl",
+  "cases": [
+    {
+      "id": "fiona_wrong_results-1",
+      "input": "傳統著重競爭性，質的雞笑管理措施特別著重在考核員工績效表現這個步驟，也就是特別著重。",
+      "gold": "傳統著重競爭性，質的績效管理措施特別著重在考核員工績效表現這個步驟，也就是特別著重。",
+      "gold_error_indexes": [
+        10,
+        11
+      ],
+      "status": "uncertain",
+      "corrected_text": null,
+      "score_calls": 17,
+      "scored_prompts": 17,
+      "top_candidate": "質->照 delta=0.952 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 6,
+          "char": "性",
+          "risk_score": 24.6323299407959,
+          "token_logprob": -24.6323299407959,
+          "span_score": -24.6323299407959,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 21,
+          "char": "考",
+          "risk_score": 22.626365661621094,
+          "token_logprob": -22.626365661621094,
+          "span_score": -22.626365661621094,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 22,
+          "char": "核",
+          "risk_score": 22.626365661621094,
+          "token_logprob": -22.626365661621094,
+          "span_score": -22.626365661621094,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 11,
+          "char": "笑",
+          "risk_score": 22.08439826965332,
+          "token_logprob": -22.08439826965332,
+          "span_score": -22.08439826965332,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 8,
+          "char": "質",
+          "risk_score": 21.062009811401367,
+          "token_logprob": -21.062009811401367,
+          "span_score": -21.062009811401367,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 8,
+          "original_char": "質",
+          "candidate_char": "照",
+          "source": "vllm_top_logprob",
+          "original_text": "傳統著重競爭性，質的雞笑管理措施特別著重在考核員工績效表現這個步驟，也就是特別著重。",
+          "candidate_text": "傳統著重競爭性，照的雞笑管理措施特別著重在考核員工績效表現這個步驟，也就是特別著重。",
+          "original_score": -10.078708126431419,
+          "candidate_score": -9.127207404091244,
+          "delta": 0.9515007223401746,
+          "original_span": "質",
+          "corrected_span": "照"
+        },
+        {
+          "index": 8,
+          "original_char": "質",
+          "candidate_char": "後",
+          "source": "vllm_top_logprob",
+          "original_text": "傳統著重競爭性，質的雞笑管理措施特別著重在考核員工績效表現這個步驟，也就是特別著重。",
+          "candidate_text": "傳統著重競爭性，後的雞笑管理措施特別著重在考核員工績效表現這個步驟，也就是特別著重。",
+          "original_score": -10.078708126431419,
+          "candidate_score": -9.35212503160749,
+          "delta": 0.726583094823928,
+          "original_span": "質",
+          "corrected_span": "後"
+        },
+        {
+          "index": 8,
+          "original_char": "質",
+          "candidate_char": "又",
+          "source": "vllm_top_logprob",
+          "original_text": "傳統著重競爭性，質的雞笑管理措施特別著重在考核員工績效表現這個步驟，也就是特別著重。",
+          "candidate_text": "傳統著重競爭性，又的雞笑管理措施特別著重在考核員工績效表現這個步驟，也就是特別著重。",
+          "original_score": -10.078708126431419,
+          "candidate_score": -9.392747788202195,
+          "delta": 0.6859603382292239,
+          "original_span": "質",
+          "corrected_span": "又"
+        }
+      ]
+    },
+    {
+      "id": "fiona_wrong_results-2",
+      "input": "復貴公司102年8月16日發字第1020816號函",
+      "gold": "覆貴公司102年8月16日發字第1020816號函",
+      "gold_error_indexes": [
+        0
+      ],
+      "status": "corrected",
+      "corrected_text": "復貴公司102年8月16日發字第1020816號第",
+      "score_calls": 4,
+      "scored_prompts": 4,
+      "top_candidate": "函->第 delta=1.577 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 1,
+          "char": "貴",
+          "risk_score": 16.1024169921875,
+          "token_logprob": -16.1024169921875,
+          "span_score": -16.1024169921875,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 2,
+          "char": "公",
+          "risk_score": 14.737032890319824,
+          "token_logprob": -13.371648788452148,
+          "span_score": -14.737032890319824,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 23,
+          "char": "號",
+          "risk_score": 14.630232810974121,
+          "token_logprob": -14.630232810974121,
+          "span_score": -14.630232810974121,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 24,
+          "char": "函",
+          "risk_score": 14.368437767028809,
+          "token_logprob": -14.106642723083496,
+          "span_score": -14.368437767028809,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 7,
+          "char": "年",
+          "risk_score": 13.721579551696777,
+          "token_logprob": -13.083415031433105,
+          "span_score": -13.721579551696777,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 24,
+          "original_char": "函",
+          "candidate_char": "第",
+          "source": "vllm_top_logprob",
+          "original_text": "復貴公司102年8月16日發字第1020816號函",
+          "candidate_text": "復貴公司102年8月16日發字第1020816號第",
+          "original_score": -8.957922898806059,
+          "candidate_score": -7.380716607547724,
+          "delta": 1.5772062912583351,
+          "original_span": "函",
+          "corrected_span": "第"
+        }
+      ]
+    },
+    {
+      "id": "fiona_wrong_results-3",
+      "input": "復貴公司 101 年 3 月 9 日未具文號",
+      "gold": "覆貴公司 101 年 3 月 9 日未具文號",
+      "gold_error_indexes": [
+        0
+      ],
+      "status": "corrected",
+      "corrected_text": "復降公司 101 年 3 月 9 日未具文號",
+      "score_calls": 8,
+      "scored_prompts": 8,
+      "top_candidate": "貴->降 delta=2.377 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 9,
+          "char": "年",
+          "risk_score": 20.971620559692383,
+          "token_logprob": -20.971620559692383,
+          "span_score": -20.971620559692383,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 18,
+          "char": "未",
+          "risk_score": 18.53950309753418,
+          "token_logprob": -18.53950309753418,
+          "span_score": -18.53950309753418,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 13,
+          "char": "月",
+          "risk_score": 16.725719451904297,
+          "token_logprob": -16.725719451904297,
+          "span_score": -16.725719451904297,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 19,
+          "char": "具",
+          "risk_score": 14.865588188171387,
+          "token_logprob": -11.191673278808594,
+          "span_score": -14.865588188171387,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 1,
+          "char": "貴",
+          "risk_score": 14.5928316116333,
+          "token_logprob": -14.5928316116333,
+          "span_score": -14.5928316116333,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 1,
+          "original_char": "貴",
+          "candidate_char": "降",
+          "source": "vllm_top_logprob",
+          "original_text": "復貴公司 101 年 3 月 9 日未具文號",
+          "candidate_text": "復降公司 101 年 3 月 9 日未具文號",
+          "original_score": -7.366328580038888,
+          "candidate_score": -4.989322917801993,
+          "delta": 2.377005662236895,
+          "original_span": "貴",
+          "corrected_span": "降"
+        }
+      ]
+    },
+    {
+      "id": "fiona_wrong_results-4",
+      "input": "復貴會102 年10 月23 日原民教字第1020057319 號函",
+      "gold": "覆貴會102 年10 月23 日原民教字第1020057319 號函",
+      "gold_error_indexes": [
+        0
+      ],
+      "status": "uncertain",
+      "corrected_text": null,
+      "score_calls": 8,
+      "scored_prompts": 8,
+      "top_candidate": "函->碼 delta=0.897 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 7,
+          "char": "年",
+          "risk_score": 25.89201545715332,
+          "token_logprob": -25.89201545715332,
+          "span_score": -25.89201545715332,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 1,
+          "char": "貴",
+          "risk_score": 14.945661544799805,
+          "token_logprob": -14.945661544799805,
+          "span_score": -14.945661544799805,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 2,
+          "char": "會",
+          "risk_score": 13.087390899658203,
+          "token_logprob": -11.229120254516602,
+          "span_score": -13.087390899658203,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 19,
+          "char": "字",
+          "risk_score": 12.215378761291504,
+          "token_logprob": -12.215378761291504,
+          "span_score": -12.215378761291504,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 33,
+          "char": "函",
+          "risk_score": 11.945732116699219,
+          "token_logprob": -11.945732116699219,
+          "span_score": -11.945732116699219,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 33,
+          "original_char": "函",
+          "candidate_char": "碼",
+          "source": "vllm_top_logprob",
+          "original_text": "復貴會102 年10 月23 日原民教字第1020057319 號函",
+          "candidate_text": "復貴會102 年10 月23 日原民教字第1020057319 號碼",
+          "original_score": -10.962357961214506,
+          "candidate_score": -10.065748031322773,
+          "delta": 0.8966099298917332,
+          "original_span": "函",
+          "corrected_span": "碼"
+        },
+        {
+          "index": 2,
+          "original_char": "會",
+          "candidate_char": "速",
+          "source": "vllm_top_logprob",
+          "original_text": "復貴會102 年10 月23 日原民教字第1020057319 號函",
+          "candidate_text": "復貴速102 年10 月23 日原民教字第1020057319 號函",
+          "original_score": -7.0177152512944305,
+          "candidate_score": -6.32776025843729,
+          "delta": 0.6899549928571407,
+          "original_span": "會",
+          "corrected_span": "速"
+        },
+        {
+          "index": 1,
+          "original_char": "貴",
+          "candidate_char": "降",
+          "source": "vllm_top_logprob",
+          "original_text": "復貴會102 年10 月23 日原民教字第1020057319 號函",
+          "candidate_text": "復降會102 年10 月23 日原民教字第1020057319 號函",
+          "original_score": -7.043979901155191,
+          "candidate_score": -7.172555224300595,
+          "delta": -0.12857532314540432,
+          "original_span": "貴",
+          "corrected_span": "降"
+        }
+      ]
+    },
+    {
+      "id": "fiona_wrong_results-5",
+      "input": "復貴部110年11年11月字第0000000000 號函",
+      "gold": "覆貴部110年11年11月字第0000000000 號函",
+      "gold_error_indexes": [
+        0
+      ],
+      "status": "no_error",
+      "corrected_text": "復貴部110年11年11月字第0000000000 號函",
+      "score_calls": 3,
+      "scored_prompts": 3,
+      "top_candidate": "-",
+      "suspicious_chars": [
+        {
+          "index": 13,
+          "char": "字",
+          "risk_score": 20.343769073486328,
+          "token_logprob": -20.343769073486328,
+          "span_score": -20.343769073486328,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 6,
+          "char": "年",
+          "risk_score": 18.887008666992188,
+          "token_logprob": -18.887008666992188,
+          "span_score": -18.887008666992188,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 14,
+          "char": "第",
+          "risk_score": 17.156708240509033,
+          "token_logprob": -13.969647407531738,
+          "span_score": -17.156708240509033,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 9,
+          "char": "年",
+          "risk_score": 16.500198364257812,
+          "token_logprob": -16.500198364257812,
+          "span_score": -16.500198364257812,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 26,
+          "char": "號",
+          "risk_score": 16.38192367553711,
+          "token_logprob": -16.38192367553711,
+          "span_score": -16.38192367553711,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": []
+    },
+    {
+      "id": "fiona_wrong_results-6",
+      "input": "調整移撥業務與經費明確劃分，俾利預算資源妥適規劃，並可促進跨域合作。",
+      "gold": "調整移撥業務與經費明確畫分，俾利預算資源妥適規劃，並可促進跨域合作。",
+      "gold_error_indexes": [
+        11
+      ],
+      "status": "corrected",
+      "corrected_text": "調整移撥業務與經把明確劃分，俾利預算資源妥適規劃，並可促進跨域合作。",
+      "score_calls": 19,
+      "scored_prompts": 19,
+      "top_candidate": "費->把 delta=1.708 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 3,
+          "char": "撥",
+          "risk_score": 23.262569427490234,
+          "token_logprob": -23.262569427490234,
+          "span_score": -23.262569427490234,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 9,
+          "char": "明",
+          "risk_score": 20.608972549438477,
+          "token_logprob": -20.608972549438477,
+          "span_score": -20.608972549438477,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 10,
+          "char": "確",
+          "risk_score": 20.608972549438477,
+          "token_logprob": -20.608972549438477,
+          "span_score": -20.608972549438477,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 8,
+          "char": "費",
+          "risk_score": 19.937336921691895,
+          "token_logprob": -19.265701293945312,
+          "span_score": -19.937336921691895,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 2,
+          "char": "移",
+          "risk_score": 18.278542041778564,
+          "token_logprob": -13.294514656066895,
+          "span_score": -18.278542041778564,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 8,
+          "original_char": "費",
+          "candidate_char": "把",
+          "source": "vllm_top_logprob",
+          "original_text": "調整移撥業務與經費明確劃分，俾利預算資源妥適規劃，並可促進跨域合作。",
+          "candidate_text": "調整移撥業務與經把明確劃分，俾利預算資源妥適規劃，並可促進跨域合作。",
+          "original_score": -8.985917477380662,
+          "candidate_score": -7.277898382572901,
+          "delta": 1.708019094807761,
+          "original_span": "費",
+          "corrected_span": "把"
+        }
+      ]
+    },
+    {
+      "id": "fiona_wrong_results-7",
+      "input": "小明今添不上般",
+      "gold": "小明今天不上班",
+      "gold_error_indexes": [
+        3,
+        6
+      ],
+      "status": "corrected",
+      "corrected_text": "小明今添不上今",
+      "score_calls": 11,
+      "scored_prompts": 11,
+      "top_candidate": "般->今 delta=2.511 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 4,
+          "char": "不",
+          "risk_score": 19.29150390625,
+          "token_logprob": -19.29150390625,
+          "span_score": -19.29150390625,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 5,
+          "char": "上",
+          "risk_score": 19.29150390625,
+          "token_logprob": -19.29150390625,
+          "span_score": -19.29150390625,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 6,
+          "char": "般",
+          "risk_score": 18.07886505126953,
+          "token_logprob": -16.866226196289062,
+          "span_score": -18.07886505126953,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 3,
+          "char": "添",
+          "risk_score": 17.133094787597656,
+          "token_logprob": -14.974685668945312,
+          "span_score": -17.133094787597656,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 2,
+          "char": "今",
+          "risk_score": 14.852286020914713,
+          "token_logprob": -10.290668487548828,
+          "span_score": -14.852286020914713,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 6,
+          "original_char": "般",
+          "candidate_char": "今",
+          "source": "vllm_top_logprob",
+          "original_text": "小明今添不上般",
+          "candidate_text": "小明今添不上今",
+          "original_score": -9.748307500566755,
+          "candidate_score": -7.237359191690173,
+          "delta": 2.510948308876582,
+          "original_span": "般",
+          "corrected_span": "今"
+        }
+      ]
+    },
+    {
+      "id": "fiona_wrong_results-8",
+      "input": "需打造高雞笑的團隊",
+      "gold": "需打造高績效的團隊",
+      "gold_error_indexes": [
+        4,
+        5
+      ],
+      "status": "uncertain",
+      "corrected_text": null,
+      "score_calls": 17,
+      "scored_prompts": 17,
+      "top_candidate": "雞->能 delta=2.060 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 4,
+          "char": "雞",
+          "risk_score": 23.48719024658203,
+          "token_logprob": -23.48719024658203,
+          "span_score": -23.48719024658203,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 5,
+          "char": "笑",
+          "risk_score": 19.40076732635498,
+          "token_logprob": -15.31434440612793,
+          "span_score": -19.40076732635498,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 3,
+          "char": "高",
+          "risk_score": 17.550416946411133,
+          "token_logprob": -11.613643646240234,
+          "span_score": -17.550416946411133,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 2,
+          "char": "造",
+          "risk_score": 16.14630063374837,
+          "token_logprob": -13.338068008422852,
+          "span_score": -16.14630063374837,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 6,
+          "char": "的",
+          "risk_score": 14.857680638631185,
+          "token_logprob": -5.771507263183594,
+          "span_score": -14.857680638631185,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 4,
+          "original_char": "雞",
+          "candidate_char": "能",
+          "source": "vllm_top_logprob",
+          "original_text": "需打造高雞笑的團隊",
+          "candidate_text": "需打造高能笑的團隊",
+          "original_score": -9.170452435811361,
+          "candidate_score": -7.11037031809489,
+          "delta": 2.0600821177164717,
+          "original_span": "雞",
+          "corrected_span": "能"
+        },
+        {
+          "index": 5,
+          "original_char": "笑",
+          "candidate_char": "肉",
+          "source": "vllm_top_logprob",
+          "original_text": "需打造高雞笑的團隊",
+          "candidate_text": "需打造高雞肉的團隊",
+          "original_score": -9.170452435811361,
+          "candidate_score": -7.480532010396321,
+          "delta": 1.68992042541504,
+          "original_span": "笑",
+          "corrected_span": "肉"
+        },
+        {
+          "index": 4,
+          "original_char": "雞",
+          "candidate_char": "需",
+          "source": "vllm_top_logprob",
+          "original_text": "需打造高雞笑的團隊",
+          "candidate_text": "需打造高需笑的團隊",
+          "original_score": -9.170452435811361,
+          "candidate_score": -8.164794196685156,
+          "delta": 1.0056582391262054,
+          "original_span": "雞",
+          "corrected_span": "需"
+        }
+      ]
+    },
+    {
+      "id": "fiona_wrong_results-9",
+      "input": "打造高雞笑的團隊",
+      "gold": "打造高績效的團隊",
+      "gold_error_indexes": [
+        3,
+        4
+      ],
+      "status": "uncertain",
+      "corrected_text": null,
+      "score_calls": 12,
+      "scored_prompts": 12,
+      "top_candidate": "笑->碼 delta=1.015 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 3,
+          "char": "雞",
+          "risk_score": 20.606002807617188,
+          "token_logprob": -20.606002807617188,
+          "span_score": -20.606002807617188,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 4,
+          "char": "笑",
+          "risk_score": 17.751132011413574,
+          "token_logprob": -14.896261215209961,
+          "span_score": -17.751132011413574,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 2,
+          "char": "高",
+          "risk_score": 17.565059185028076,
+          "token_logprob": -14.524115562438965,
+          "span_score": -17.565059185028076,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 5,
+          "char": "的",
+          "risk_score": 13.19273853302002,
+          "token_logprob": -4.07595157623291,
+          "span_score": -13.19273853302002,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 6,
+          "char": "團",
+          "risk_score": 12.267203330993652,
+          "token_logprob": -12.267203330993652,
+          "span_score": -12.267203330993652,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 4,
+          "original_char": "笑",
+          "candidate_char": "碼",
+          "source": "vllm_top_logprob",
+          "original_text": "打造高雞笑的團隊",
+          "candidate_text": "打造高雞碼的團隊",
+          "original_score": -8.296191811561584,
+          "candidate_score": -7.281086981296539,
+          "delta": 1.0151048302650452,
+          "original_span": "笑",
+          "corrected_span": "碼"
+        },
+        {
+          "index": 4,
+          "original_char": "笑",
+          "candidate_char": "雞",
+          "source": "vllm_top_logprob",
+          "original_text": "打造高雞笑的團隊",
+          "candidate_text": "打造高雞雞的團隊",
+          "original_score": -8.296191811561584,
+          "candidate_score": -7.478626407682896,
+          "delta": 0.8175654038786888,
+          "original_span": "笑",
+          "corrected_span": "雞"
+        },
+        {
+          "index": 4,
+          "original_char": "笑",
+          "candidate_char": "度",
+          "source": "vllm_top_logprob",
+          "original_text": "打造高雞笑的團隊",
+          "candidate_text": "打造高雞度的團隊",
+          "original_score": -8.296191811561584,
+          "candidate_score": -8.42906391620636,
+          "delta": -0.1328721046447754,
+          "original_span": "笑",
+          "corrected_span": "度"
+        }
+      ]
+    },
+    {
+      "id": "fiona_wrong_results-10",
+      "input": "想要打造高雞笑的團隊",
+      "gold": "想要打造高績效的團隊",
+      "gold_error_indexes": [
+        5,
+        6
+      ],
+      "status": "uncertain",
+      "corrected_text": null,
+      "score_calls": 6,
+      "scored_prompts": 6,
+      "top_candidate": "笑->度 delta=1.646 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 5,
+          "char": "雞",
+          "risk_score": 19.345190048217773,
+          "token_logprob": -19.345190048217773,
+          "span_score": -19.345190048217773,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 6,
+          "char": "笑",
+          "risk_score": 17.85078716278076,
+          "token_logprob": -16.35638427734375,
+          "span_score": -17.85078716278076,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 4,
+          "char": "高",
+          "risk_score": 15.831670761108398,
+          "token_logprob": -11.793437957763672,
+          "span_score": -15.831670761108398,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 3,
+          "char": "造",
+          "risk_score": 14.667450586954752,
+          "token_logprob": -12.863723754882812,
+          "span_score": -14.667450586954752,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 7,
+          "char": "的",
+          "risk_score": 14.419902165730795,
+          "token_logprob": -7.558132171630859,
+          "span_score": -14.419902165730795,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 6,
+          "original_char": "笑",
+          "candidate_char": "度",
+          "source": "vllm_top_logprob",
+          "original_text": "想要打造高雞笑的團隊",
+          "candidate_text": "想要打造高雞度的團隊",
+          "original_score": -8.099548530578613,
+          "candidate_score": -6.453390789031983,
+          "delta": 1.64615774154663,
+          "original_span": "笑",
+          "corrected_span": "度"
+        },
+        {
+          "index": 6,
+          "original_char": "笑",
+          "candidate_char": "蛋",
+          "source": "vllm_top_logprob",
+          "original_text": "想要打造高雞笑的團隊",
+          "candidate_text": "想要打造高雞蛋的團隊",
+          "original_score": -8.099548530578613,
+          "candidate_score": -6.765007972717285,
+          "delta": 1.3345405578613274,
+          "original_span": "笑",
+          "corrected_span": "蛋"
+        },
+        {
+          "index": 6,
+          "original_char": "笑",
+          "candidate_char": "款",
+          "source": "vllm_top_logprob",
+          "original_text": "想要打造高雞笑的團隊",
+          "candidate_text": "想要打造高雞款的團隊",
+          "original_score": -8.099548530578613,
+          "candidate_score": -8.398945713043213,
+          "delta": -0.2993971824646007,
+          "original_span": "笑",
+          "corrected_span": "款"
+        }
+      ]
+    },
+    {
+      "id": "fiona_wrong_results-11",
+      "input": "需打造高雞效的團隊",
+      "gold": "需打造高績效的團隊",
+      "gold_error_indexes": [
+        4
+      ],
+      "status": "uncertain",
+      "corrected_text": null,
+      "score_calls": 20,
+      "scored_prompts": 20,
+      "top_candidate": "雞->应 delta=1.912 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 4,
+          "char": "雞",
+          "risk_score": 21.75762939453125,
+          "token_logprob": -21.75762939453125,
+          "span_score": -21.75762939453125,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 3,
+          "char": "高",
+          "risk_score": 16.537453651428223,
+          "token_logprob": -11.317277908325195,
+          "span_score": -16.537453651428223,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 5,
+          "char": "效",
+          "risk_score": 16.4753155708313,
+          "token_logprob": -11.193001747131348,
+          "span_score": -16.4753155708313,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 2,
+          "char": "造",
+          "risk_score": 15.386589686075846,
+          "token_logprob": -13.084861755371094,
+          "span_score": -15.386589686075846,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 1,
+          "char": "打",
+          "risk_score": 13.084861755371094,
+          "token_logprob": -13.084861755371094,
+          "span_score": -13.084861755371094,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 4,
+          "original_char": "雞",
+          "candidate_char": "应",
+          "source": "vllm_top_logprob",
+          "original_text": "需打造高雞效的團隊",
+          "candidate_text": "需打造高应效的團隊",
+          "original_score": -8.45431555642022,
+          "candidate_score": -6.54205682542589,
+          "delta": 1.9122587309943295,
+          "original_span": "雞",
+          "corrected_span": "应"
+        },
+        {
+          "index": 4,
+          "original_char": "雞",
+          "candidate_char": "能",
+          "source": "vllm_top_logprob",
+          "original_text": "需打造高雞效的團隊",
+          "candidate_text": "需打造高能效的團隊",
+          "original_score": -8.45431555642022,
+          "candidate_score": -6.790911939409044,
+          "delta": 1.6634036170111752,
+          "original_span": "雞",
+          "corrected_span": "能"
+        },
+        {
+          "index": 4,
+          "original_char": "雞",
+          "candidate_char": "以",
+          "source": "vllm_top_logprob",
+          "original_text": "需打造高雞效的團隊",
+          "candidate_text": "需打造高以效的團隊",
+          "original_score": -8.45431555642022,
+          "candidate_score": -7.288103421529134,
+          "delta": 1.1662121348910857,
+          "original_span": "雞",
+          "corrected_span": "以"
+        }
+      ]
+    },
+    {
+      "id": "fiona_wrong_results-12",
+      "input": "打造高雞效的團隊",
+      "gold": "打造高績效的團隊",
+      "gold_error_indexes": [
+        3
+      ],
+      "status": "uncertain",
+      "corrected_text": null,
+      "score_calls": 6,
+      "scored_prompts": 6,
+      "top_candidate": "的->專 delta=0.526 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 4,
+          "char": "效",
+          "risk_score": 18.501317977905273,
+          "token_logprob": -18.501317977905273,
+          "span_score": -18.501317977905273,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 3,
+          "char": "雞",
+          "risk_score": 17.760788917541504,
+          "token_logprob": -17.020259857177734,
+          "span_score": -17.760788917541504,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 2,
+          "char": "高",
+          "risk_score": 16.7148380279541,
+          "token_logprob": -14.622936248779297,
+          "span_score": -16.7148380279541,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 5,
+          "char": "的",
+          "risk_score": 13.490334828694662,
+          "token_logprob": -4.949426651000977,
+          "span_score": -13.490334828694662,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 6,
+          "char": "團",
+          "risk_score": 13.479108810424805,
+          "token_logprob": -13.479108810424805,
+          "span_score": -13.479108810424805,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 5,
+          "original_char": "的",
+          "candidate_char": "專",
+          "source": "vllm_top_logprob",
+          "original_text": "打造高雞效的團隊",
+          "candidate_text": "打造高雞效專團隊",
+          "original_score": -8.57163119316101,
+          "candidate_score": -8.045777201652527,
+          "delta": 0.5258539915084839,
+          "original_span": "的",
+          "corrected_span": "專"
+        },
+        {
+          "index": 6,
+          "original_char": "團",
+          "candidate_char": "高",
+          "source": "vllm_top_logprob",
+          "original_text": "打造高雞效的團隊",
+          "candidate_text": "打造高雞效的高隊",
+          "original_score": -8.57163119316101,
+          "candidate_score": -8.479735791683197,
+          "delta": 0.09189540147781372,
+          "original_span": "團",
+          "corrected_span": "高"
+        },
+        {
+          "index": 5,
+          "original_char": "的",
+          "candidate_char": "高",
+          "source": "vllm_top_logprob",
+          "original_text": "打造高雞效的團隊",
+          "candidate_text": "打造高雞效高團隊",
+          "original_score": -8.57163119316101,
+          "candidate_score": -9.469369292259216,
+          "delta": -0.8977380990982056,
+          "original_span": "的",
+          "corrected_span": "高"
+        }
+      ]
+    },
+    {
+      "id": "fiona_wrong_results-13",
+      "input": "致力於打造高雞笑的團隊",
+      "gold": "致力於打造高績效的團隊",
+      "gold_error_indexes": [
+        6,
+        7
+      ],
+      "status": "corrected",
+      "corrected_text": "致力於打造高以笑的團隊",
+      "score_calls": 16,
+      "scored_prompts": 16,
+      "top_candidate": "雞->以 delta=1.406 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 6,
+          "char": "雞",
+          "risk_score": 17.09330940246582,
+          "token_logprob": -17.09330940246582,
+          "span_score": -17.09330940246582,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 5,
+          "char": "高",
+          "risk_score": 16.60932445526123,
+          "token_logprob": -16.12533950805664,
+          "span_score": -16.60932445526123,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 4,
+          "char": "造",
+          "risk_score": 16.279268900553387,
+          "token_logprob": -15.619157791137695,
+          "span_score": -16.279268900553387,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 7,
+          "char": "笑",
+          "risk_score": 15.953384081522623,
+          "token_logprob": -14.64150333404541,
+          "span_score": -15.953384081522623,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 3,
+          "char": "打",
+          "risk_score": 15.619157791137695,
+          "token_logprob": -15.619157791137695,
+          "span_score": -15.619157791137695,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 6,
+          "original_char": "雞",
+          "candidate_char": "以",
+          "source": "vllm_top_logprob",
+          "original_text": "致力於打造高雞笑的團隊",
+          "candidate_text": "致力於打造高以笑的團隊",
+          "original_score": -7.988982287320224,
+          "candidate_score": -6.582968766039068,
+          "delta": 1.4060135212811558,
+          "original_span": "雞",
+          "corrected_span": "以"
+        }
+      ]
+    },
+    {
+      "id": "fiona_wrong_results-14",
+      "input": "在烏克蘭極力抵抗俄羅斯入侵的同時，在臺灣卻不時能看到宣揚失敗主意的言論",
+      "gold": "在烏克蘭極力抵抗俄羅斯入侵的同時，在臺灣卻不時能看到宣揚失敗主義的言論",
+      "gold_error_indexes": [
+        31
+      ],
+      "status": "uncertain",
+      "corrected_text": null,
+      "score_calls": 16,
+      "scored_prompts": 16,
+      "top_candidate": "烏->在 delta=1.874 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 1,
+          "char": "烏",
+          "risk_score": 23.317825317382812,
+          "token_logprob": -23.317825317382812,
+          "span_score": -23.317825317382812,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 11,
+          "char": "入",
+          "risk_score": 21.870243072509766,
+          "token_logprob": -21.870243072509766,
+          "span_score": -21.870243072509766,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 12,
+          "char": "侵",
+          "risk_score": 21.870243072509766,
+          "token_logprob": -21.870243072509766,
+          "span_score": -21.870243072509766,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 30,
+          "char": "主",
+          "risk_score": 19.87575912475586,
+          "token_logprob": -19.87575912475586,
+          "span_score": -19.87575912475586,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 33,
+          "char": "言",
+          "risk_score": 19.40315818786621,
+          "token_logprob": -19.40315818786621,
+          "span_score": -19.40315818786621,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 1,
+          "original_char": "烏",
+          "candidate_char": "在",
+          "source": "vllm_top_logprob",
+          "original_text": "在烏克蘭極力抵抗俄羅斯入侵的同時，在臺灣卻不時能看到宣揚失敗主意的言論",
+          "candidate_text": "在在克蘭極力抵抗俄羅斯入侵的同時，在臺灣卻不時能看到宣揚失敗主意的言論",
+          "original_score": -12.009779231888908,
+          "candidate_score": -10.135289456163134,
+          "delta": 1.874489775725774,
+          "original_span": "烏",
+          "corrected_span": "在"
+        },
+        {
+          "index": 1,
+          "original_char": "烏",
+          "candidate_char": "最",
+          "source": "vllm_top_logprob",
+          "original_text": "在烏克蘭極力抵抗俄羅斯入侵的同時，在臺灣卻不時能看到宣揚失敗主意的言論",
+          "candidate_text": "在最克蘭極力抵抗俄羅斯入侵的同時，在臺灣卻不時能看到宣揚失敗主意的言論",
+          "original_score": -12.009779231888908,
+          "candidate_score": -10.197713783809117,
+          "delta": 1.8120654480797906,
+          "original_span": "烏",
+          "corrected_span": "最"
+        },
+        {
+          "index": 33,
+          "original_char": "言",
+          "candidate_char": "看",
+          "source": "vllm_top_logprob",
+          "original_text": "在烏克蘭極力抵抗俄羅斯入侵的同時，在臺灣卻不時能看到宣揚失敗主意的言論",
+          "candidate_text": "在烏克蘭極力抵抗俄羅斯入侵的同時，在臺灣卻不時能看到宣揚失敗主意的看論",
+          "original_score": -10.634665080479213,
+          "candidate_score": -9.747829641614642,
+          "delta": 0.886835438864571,
+          "original_span": "言",
+          "corrected_span": "看"
+        }
+      ]
+    },
+    {
+      "id": "fiona_wrong_results-15",
+      "input": "平常都不理人，就挑這種時候來干老",
+      "gold": "平常都不理人，就挑這種時候來干擾",
+      "gold_error_indexes": [
+        15
+      ],
+      "status": "uncertain",
+      "corrected_text": null,
+      "score_calls": 13,
+      "scored_prompts": 13,
+      "top_candidate": "挑->照 delta=0.523 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 9,
+          "char": "這",
+          "risk_score": 24.908706665039062,
+          "token_logprob": -24.908706665039062,
+          "span_score": -24.908706665039062,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 10,
+          "char": "種",
+          "risk_score": 24.908706665039062,
+          "token_logprob": -24.908706665039062,
+          "span_score": -24.908706665039062,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 8,
+          "char": "挑",
+          "risk_score": 18.32163715362549,
+          "token_logprob": -11.734567642211914,
+          "span_score": -18.32163715362549,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 11,
+          "char": "時",
+          "risk_score": 18.064799308776855,
+          "token_logprob": -11.220891952514648,
+          "span_score": -18.064799308776855,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 7,
+          "char": "就",
+          "risk_score": 15.798744519551596,
+          "token_logprob": -10.752959251403809,
+          "span_score": -15.798744519551596,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 8,
+          "original_char": "挑",
+          "candidate_char": "照",
+          "source": "vllm_top_logprob",
+          "original_text": "平常都不理人，就挑這種時候來干老",
+          "candidate_text": "平常都不理人，就照這種時候來干老",
+          "original_score": -8.131428003311157,
+          "candidate_score": -7.608610361814499,
+          "delta": 0.5228176414966583,
+          "original_span": "挑",
+          "corrected_span": "照"
+        },
+        {
+          "index": 8,
+          "original_char": "挑",
+          "candidate_char": "人",
+          "source": "vllm_top_logprob",
+          "original_text": "平常都不理人，就挑這種時候來干老",
+          "candidate_text": "平常都不理人，就人這種時候來干老",
+          "original_score": -8.131428003311157,
+          "candidate_score": -8.016452372074127,
+          "delta": 0.11497563123703003,
+          "original_span": "挑",
+          "corrected_span": "人"
+        },
+        {
+          "index": 8,
+          "original_char": "挑",
+          "candidate_char": "理",
+          "source": "vllm_top_logprob",
+          "original_text": "平常都不理人，就挑這種時候來干老",
+          "candidate_text": "平常都不理人，就理這種時候來干老",
+          "original_score": -8.131428003311157,
+          "candidate_score": -8.185577761381865,
+          "delta": -0.05414975807070732,
+          "original_span": "挑",
+          "corrected_span": "理"
+        }
+      ]
+    },
+    {
+      "id": "fiona_wrong_results-16",
+      "input": "中國「鬥音」成假訊息來源第一名",
+      "gold": "中國「抖音」成假訊息來源第一名",
+      "gold_error_indexes": [
+        3
+      ],
+      "status": "uncertain",
+      "corrected_text": null,
+      "score_calls": 10,
+      "scored_prompts": 10,
+      "top_candidate": "訊->把 delta=1.478 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 10,
+          "char": "來",
+          "risk_score": 18.431493759155273,
+          "token_logprob": -18.431493759155273,
+          "span_score": -18.431493759155273,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 11,
+          "char": "源",
+          "risk_score": 18.431493759155273,
+          "token_logprob": -18.431493759155273,
+          "span_score": -18.431493759155273,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 9,
+          "char": "息",
+          "risk_score": 18.126627922058105,
+          "token_logprob": -17.821762084960938,
+          "span_score": -18.126627922058105,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 8,
+          "char": "訊",
+          "risk_score": 17.821762084960938,
+          "token_logprob": -17.821762084960938,
+          "span_score": -17.821762084960938,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 12,
+          "char": "第",
+          "risk_score": 16.264939308166504,
+          "token_logprob": -14.098384857177734,
+          "span_score": -16.264939308166504,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 8,
+          "original_char": "訊",
+          "candidate_char": "把",
+          "source": "vllm_top_logprob",
+          "original_text": "中國「鬥音」成假訊息來源第一名",
+          "candidate_text": "中國「鬥音」成假把息來源第一名",
+          "original_score": -8.983100001017252,
+          "candidate_score": -7.505399608612061,
+          "delta": 1.4777003924051915,
+          "original_span": "訊",
+          "corrected_span": "把"
+        },
+        {
+          "index": 10,
+          "original_char": "來",
+          "candidate_char": "成",
+          "source": "vllm_top_logprob",
+          "original_text": "中國「鬥音」成假訊息來源第一名",
+          "candidate_text": "中國「鬥音」成假訊息成源第一名",
+          "original_score": -8.983100001017252,
+          "candidate_score": -7.54384167989095,
+          "delta": 1.4392583211263021,
+          "original_span": "來",
+          "corrected_span": "成"
+        },
+        {
+          "index": 8,
+          "original_char": "訊",
+          "candidate_char": "利",
+          "source": "vllm_top_logprob",
+          "original_text": "中國「鬥音」成假訊息來源第一名",
+          "candidate_text": "中國「鬥音」成假利息來源第一名",
+          "original_score": -8.983100001017252,
+          "candidate_score": -7.732292620340983,
+          "delta": 1.2508073806762692,
+          "original_span": "訊",
+          "corrected_span": "利"
+        }
+      ]
+    },
+    {
+      "id": "fiona_wrong_results-17",
+      "input": "在中世紀能夠時常喝到蒲陶酒是因為能夠飲用的水很貴重。",
+      "gold": "在中世紀能夠時常喝到葡萄酒是因為能夠飲用的水很貴重。",
+      "gold_error_indexes": [
+        10,
+        11
+      ],
+      "status": "uncertain",
+      "corrected_text": null,
+      "score_calls": 17,
+      "scored_prompts": 17,
+      "top_candidate": "夠->後 delta=0.979 source=vllm_top_logprob",
+      "suspicious_chars": [
+        {
+          "index": 18,
+          "char": "飲",
+          "risk_score": 23.31560516357422,
+          "token_logprob": -23.31560516357422,
+          "span_score": -23.31560516357422,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 4,
+          "char": "能",
+          "risk_score": 20.379594802856445,
+          "token_logprob": -20.379594802856445,
+          "span_score": -20.379594802856445,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 5,
+          "char": "夠",
+          "risk_score": 20.379594802856445,
+          "token_logprob": -20.379594802856445,
+          "span_score": -20.379594802856445,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 3,
+          "char": "紀",
+          "risk_score": 19.389952659606934,
+          "token_logprob": -18.400310516357422,
+          "span_score": -19.389952659606934,
+          "reason": "低字元或局部 span likelihood"
+        },
+        {
+          "index": 11,
+          "char": "陶",
+          "risk_score": 19.20639991760254,
+          "token_logprob": -19.20639991760254,
+          "span_score": -19.20639991760254,
+          "reason": "低字元或局部 span likelihood"
+        }
+      ],
+      "corrections": [
+        {
+          "index": 5,
+          "original_char": "夠",
+          "candidate_char": "後",
+          "source": "vllm_top_logprob",
+          "original_text": "在中世紀能夠時常喝到蒲陶酒是因為能夠飲用的水很貴重。",
+          "candidate_text": "在中世紀能後時常喝到蒲陶酒是因為能夠飲用的水很貴重。",
+          "original_score": -9.284044292238024,
+          "candidate_score": -8.30513866742452,
+          "delta": 0.9789056248135033,
+          "original_span": "夠",
+          "corrected_span": "後"
+        },
+        {
+          "index": 5,
+          "original_char": "夠",
+          "candidate_char": "中",
+          "source": "vllm_top_logprob",
+          "original_text": "在中世紀能夠時常喝到蒲陶酒是因為能夠飲用的水很貴重。",
+          "candidate_text": "在中世紀能中時常喝到蒲陶酒是因為能夠飲用的水很貴重。",
+          "original_score": -9.284044292238024,
+          "candidate_score": -8.641678478982714,
+          "delta": 0.6423658132553101,
+          "original_span": "夠",
+          "corrected_span": "中"
+        },
+        {
+          "index": 18,
+          "original_char": "飲",
+          "candidate_char": "將",
+          "source": "vllm_top_logprob",
+          "original_text": "在中世紀能夠時常喝到蒲陶酒是因為能夠飲用的水很貴重。",
+          "candidate_text": "在中世紀能夠時常喝到蒲陶酒是因為能夠將用的水很貴重。",
+          "original_score": -8.743418550491333,
+          "candidate_score": -8.522311127185821,
+          "delta": 0.22110742330551147,
+          "original_span": "飲",
+          "corrected_span": "將"
+        }
+      ]
+    }
+  ]
+}

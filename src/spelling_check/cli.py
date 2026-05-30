@@ -7,6 +7,8 @@ from pathlib import Path
 from typing import cast
 
 from spelling_check.client import VllmClient
+from spelling_check.dataset import SgmlDataset, load_sgml_dataset, load_texts
+from spelling_check.evaluation import evaluate_csc
 from spelling_check.models import CorrectionResult
 from spelling_check.pipeline import SpellingCheckConfig, spelling_check
 
@@ -19,23 +21,15 @@ DEFAULT_SAMPLE_FILE = (
 
 def main() -> int:
     args = parse_args()
-    client = VllmClient(
-        base_url=args.base_url,
-        model=args.model,
-        api_key=args.api_key,
-        timeout=args.timeout,
-    )
-    config = SpellingCheckConfig(
-        prompt_logprobs=args.prompt_logprobs,
-        risk_threshold=args.risk_threshold,
-        suspicious_limit=args.suspicious_limit,
-        candidate_limit=args.candidate_limit,
-        window_radius=args.window_radius,
-        score_batch_size=args.score_batch_size,
-        strong_delta=args.strong_delta,
-        weak_delta=args.weak_delta,
-        margin=args.margin,
-    )
+    if args.input_file and args.input_file.suffix.lower() == ".sgml":
+        if args.texts:
+            raise SystemExit(
+                "SGML input file cannot be combined with positional texts."
+            )
+        return run_sgml_evaluation(args)
+
+    client = _build_client(args)
+    config = _build_config(args)
 
     for text in load_inputs(args):
         result = spelling_check(text, client, config)
@@ -52,7 +46,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("texts", nargs="*", help="input sentences")
     parser.add_argument(
-        "--input-file", type=Path, help="JSON array or newline-delimited text input"
+        "--input-file",
+        type=Path,
+        help="JSON array, newline-delimited text, or SGML evaluation input",
     )
     parser.add_argument(
         "--use-samples", action="store_true", help="run data/sample_sentences.json"
@@ -83,18 +79,85 @@ def load_inputs(args: argparse.Namespace) -> list[str]:
     if texts:
         return texts
     if args.input_file:
-        return _load_file(args.input_file)
+        return load_texts(args.input_file)
     if args.use_samples:
-        return _load_file(DEFAULT_SAMPLE_FILE)
+        return load_texts(DEFAULT_SAMPLE_FILE)
     raise SystemExit("請提供句子、--input-file，或 --use-samples。")
 
 
-def _load_file(path: Path) -> list[str]:
-    raw = path.read_text(encoding="utf-8")
-    if path.suffix == ".json":
-        data = json.loads(raw)
-        return [str(item) for item in data]
-    return [line.strip() for line in raw.splitlines() if line.strip()]
+def run_sgml_evaluation(args: argparse.Namespace) -> int:
+    dataset = load_sgml_dataset(args.input_file)
+    client = _build_client(args)
+    config = _build_config(args)
+    results = [
+        spelling_check(case.input_text, client=client, config=config)
+        for case in dataset.cases
+    ]
+    metrics = evaluate_csc(results, [case.gold_text for case in dataset.cases])
+    print(
+        json.dumps(
+            _sgml_output(dataset, results, metrics.to_dict()), ensure_ascii=False
+        )
+    )
+    return 0
+
+
+def _build_client(args: argparse.Namespace) -> VllmClient:
+    return VllmClient(
+        base_url=args.base_url,
+        model=args.model,
+        api_key=args.api_key,
+        timeout=args.timeout,
+    )
+
+
+def _build_config(args: argparse.Namespace) -> SpellingCheckConfig:
+    return SpellingCheckConfig(
+        prompt_logprobs=args.prompt_logprobs,
+        risk_threshold=args.risk_threshold,
+        suspicious_limit=args.suspicious_limit,
+        candidate_limit=args.candidate_limit,
+        window_radius=args.window_radius,
+        score_batch_size=args.score_batch_size,
+        strong_delta=args.strong_delta,
+        weak_delta=args.weak_delta,
+        margin=args.margin,
+    )
+
+
+def _sgml_output(
+    dataset: SgmlDataset,
+    results: list[CorrectionResult],
+    metrics: dict[str, float | int],
+) -> dict[str, object]:
+    return {
+        "dataset": {
+            "path": str(dataset.path),
+            "format": "sgml",
+            "case_count": len(dataset.cases),
+            "gold_error_count": dataset.gold_error_count,
+        },
+        "metrics": metrics,
+        "cases": [
+            _sgml_case_output(case.case_id, case.input_text, case.gold_text, result)
+            for case, result in zip(dataset.cases, results, strict=True)
+        ],
+    }
+
+
+def _sgml_case_output(
+    case_id: str, input_text: str, gold_text: str, result: CorrectionResult
+) -> dict[str, object]:
+    result_data = result.to_dict()
+    return {
+        "id": case_id,
+        "input": input_text,
+        "gold": gold_text,
+        "status": result_data["status"],
+        "corrected_text": result_data["corrected_text"],
+        "suspicious_chars": result_data["suspicious_chars"],
+        "corrections": result_data["corrections"],
+    }
 
 
 def print_human(result: CorrectionResult) -> None:

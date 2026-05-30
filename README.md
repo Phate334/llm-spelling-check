@@ -28,9 +28,10 @@ docker compose up vllm
 `spelling-check` 可以：
 
 - 直接檢查一個或多個句子
-- 讀取 JSON array 或逐行文字檔
+- 讀取 JSON array、逐行文字檔或 SGML 評估資料
 - 使用內建測試資料 `data/sample_sentences.json`
 - 輸出一般文字或 JSON Lines
+- 對 `.sgml` 輸入輸出單一 JSON evaluation object 與 CSC metrics
 - 調整 vLLM endpoint、模型名稱、risk threshold、修正決策門檻
 - 調整 vLLM scoring batch size；預設 `1`
 
@@ -62,6 +63,12 @@ uv run spelling-check --use-samples
 uv run spelling-check --input-file data/sample_sentences.json --json
 ```
 
+讀取 SGML 評估資料並輸出 metrics JSON：
+
+```bash
+uv run spelling-check --input-file data/fiona_wrong_results_Training.sgml
+```
+
 指定模型與門檻：
 
 ```bash
@@ -75,6 +82,12 @@ uv run spelling-check \
   --margin 0.4 \
   "這間飯店的服誤一直都很好。"
 ```
+
+## v0.2.4 SGML evaluation
+
+v0.2.4 新增 `.sgml` dataset loader。SGML 輸入會自動進入 evaluation mode，輸出單一 JSON object，包含 dataset 摘要、CSC metrics，以及每筆 case 的 input/gold/result/candidates。
+
+目前 SGML 支援 `ESSAY/TEXT/PASSAGE/MISTAKE/WRONG/CORRECTION` 格式，`location` 視為 1-based character offset，且只支援等長 replacement correction。
 
 ## v0.2.3 baseline
 
