@@ -43,19 +43,22 @@
       <h2>Results</h2>
       <details class="help-box metrics-help">
         <summary>Metrics</summary>
+        <p>P/R/F1 分別是 Precision、Recall、F1。Precision 看「抓到的有多準」，Recall 看「該抓的有沒有抓到」，F1 是兩者的平衡分數。</p>
         <dl>
           <dt>Detection Precision</dt>
-          <dd>被標成錯字的位置中，有多少真的錯。</dd>
+          <dd>被標成 suspicious 的位置中，有多少真的是錯字；越高代表少誤抓。</dd>
           <dt>Detection Recall</dt>
-          <dd>所有真正錯字中，有多少被找出來。</dd>
+          <dd>所有真正錯字中，有多少被標出來；越高代表少漏抓。</dd>
           <dt>Detection F1</dt>
-          <dd>Precision 和 Recall 的綜合分數。</dd>
+          <dd>Detection Precision 和 Detection Recall 的綜合分數，用來看偵測整體平衡。</dd>
           <dt>Correction Precision</dt>
-          <dd>模型實際修改的位置中，有多少改成正確答案。</dd>
+          <dd>模型實際修改的位置中，有多少真的改對；越高代表少改錯。</dd>
           <dt>Correction Recall</dt>
-          <dd>所有真正錯字中，有多少被改成正確答案。</dd>
+          <dd>所有真正錯字中，有多少最後被改成正確答案；越高代表修正覆蓋較完整。</dd>
+          <dt>Correction F1</dt>
+          <dd>Correction Precision 和 Correction Recall 的綜合分數，用來看修正整體平衡。</dd>
           <dt>FPR</dt>
-          <dd>正常字被誤標成 suspicious 的比例。</dd>
+          <dd>False Positive Rate，正常字被誤標成 suspicious 的比例；越低越好。</dd>
         </dl>
       </details>
       <div id="summary" class="summary"></div>

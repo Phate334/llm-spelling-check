@@ -104,6 +104,7 @@ function renderCase(item) {
     <div class="case-head"><strong>${escapeHtml(item.id || "")}</strong><span class="badge ${escapeHtml(item.status || "")}">${escapeHtml(item.status || "parsed")}</span></div>
     ${renderReviewStats(review)}
     ${renderAlignment(item, review)}
+    ${renderLegend(review)}
     ${corrections.length ? renderCorrections(corrections, item, review) : '<div class="empty">No candidate corrections.</div>'}
   </article>`;
 }
@@ -125,13 +126,29 @@ function renderReviewStats(review) {
 
 function renderAlignment(item, review) {
   const input = Array.from(item.input || "");
-  const model = Array.from(item.corrected_text || item.input || "");
-  const rows = [
-    alignmentRow("Original", input, review, "input"),
-    alignmentRow("Model", model, review, "model")
-  ];
+  const rows = [alignmentRow("Original", input, review, "input")];
   if (review.hasGold) rows.push(alignmentRow("Gold", Array.from(item.gold || ""), review, "gold"));
   return `<div class="review">${rows.join("")}</div>`;
+}
+
+function renderLegend(review) {
+  if (review.hasGold) {
+    return `<div class="legend">
+      ${legendItem("char-pred-correct", "model fixed correctly")}
+      ${legendItem("char-pred-wrong", "model changed wrongly")}
+      ${legendItem("char-missed", "gold error missed")}
+      ${legendItem("char-overedit", "normal char would be over-edited")}
+      ${legendItem("char-suspicious", "suspicious only")}
+    </div>`;
+  }
+  return `<div class="legend">
+    ${legendItem("char-pred-correct", "model changed")}
+    ${legendItem("char-suspicious", "suspicious only")}
+  </div>`;
+}
+
+function legendItem(className, label) {
+  return `<span class="legend-item"><span class="legend-swatch ${className}"></span>${escapeHtml(label)}</span>`;
 }
 
 function alignmentRow(label, chars, review, row) {
@@ -148,15 +165,14 @@ function cellClasses(index, row, review) {
   const changed = review.changedIndexes.has(index);
   const goldError = review.goldErrorIndexes.has(index);
   const suspicious = review.suspiciousIndexes.has(index);
-  if (row === "model" && changed && goldError && review.modelChars[index] === review.goldChars[index]) return ["char-pred-correct"];
-  if (row === "model" && changed && goldError) return ["char-pred-wrong"];
-  if (row === "model" && changed && !goldError && review.hasGold) return ["char-overedit"];
-  if (row === "model" && !changed && goldError) return ["char-missed"];
   if (row === "gold" && goldError) return ["char-missed"];
+  if (row === "input" && changed && goldError && review.modelChars[index] === review.goldChars[index]) return ["char-pred-correct"];
+  if (row === "input" && changed && goldError) return ["char-pred-wrong"];
+  if (row === "input" && changed && !goldError && review.hasGold) return ["char-overedit"];
+  if (row === "input" && !changed && goldError) return ["char-missed"];
   if (row === "input" && suspicious && !goldError) return ["char-suspicious"];
-  if (row === "input" && goldError) return ["char-missed"];
   if (row === "input" && suspicious) return ["char-suspicious"];
-  if (!review.hasGold && row === "model" && changed) return ["char-pred-correct"];
+  if (!review.hasGold && row === "input" && changed) return ["char-pred-correct"];
   return [];
 }
 

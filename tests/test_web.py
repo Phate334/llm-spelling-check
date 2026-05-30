@@ -60,14 +60,19 @@ def test_get_index_returns_webui_html() -> None:
     assert response.status_code == 200
     assert "<textarea" in response.text
     assert "Risk threshold" in response.text
+    assert "Precision、Recall、F1" in response.text
     assert "Detection Precision" in response.text
+    assert "Correction F1" in response.text
+    assert "False Positive Rate" in response.text
     assert "FPR" in response.text
     assert "/static/app.js" in response.text
     assert "/static/styles.css" in response.text
     assert script.status_code == 200
     assert styles.status_code == 200
     assert "renderAlignment" in script.text
+    assert 'alignmentRow("Model"' not in script.text
     assert "candidateJudgment" in script.text
+    assert "renderLegend" in script.text
 
 
 def test_defaults_api_hides_api_key() -> None:
