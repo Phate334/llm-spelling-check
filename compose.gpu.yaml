@@ -1,0 +1,24 @@
+services:
+  web:
+    depends_on:
+      - vllm
+
+  vllm:
+    image: vllm/vllm-openai:v0.21.0
+    init: true
+    ipc: host
+    ports:
+      - "8000:8000"
+    environment:
+      HF_TOKEN: ${HF_TOKEN:-}
+    volumes:
+      - ${HOME}/.cache:/root/.cache
+    command: >-
+      google/gemma-4-E4B
+      --served-model-name google/gemma-4-E4B
+      --host 0.0.0.0
+      --language-model-only
+      --max-model-len 8192
+      --gpu-memory-utilization 0.90
+    devices:
+      - nvidia.com/gpu=all

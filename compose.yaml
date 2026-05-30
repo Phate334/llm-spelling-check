@@ -1,20 +1,15 @@
 services:
-  vllm:
-    image: vllm/vllm-openai:v0.21.0
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
     init: true
-    ipc: host
     ports:
-      - "8000:8000"
+      - "8090:8000"
     environment:
-      HF_TOKEN: ${HF_TOKEN:-}
-    volumes:
-      - ${HOME}/.cache:/root/.cache
-    command: >-
-      google/gemma-4-E4B
-      --served-model-name google/gemma-4-E4B
-      --host 0.0.0.0
-      --language-model-only
-      --max-model-len 8192
-      --gpu-memory-utilization 0.90
-    devices:
-      - nvidia.com/gpu=all
+      SPELLING_BASE_URL: ${SPELLING_BASE_URL:-http://host.docker.internal:7072/v1}
+      SPELLING_MODEL: ${SPELLING_MODEL:-gemma-4-26b-a4b}
+      SPELLING_API_KEY: ${SPELLING_API_KEY:-}
+      SPELLING_TIMEOUT: ${SPELLING_TIMEOUT:-30}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

@@ -89,6 +89,51 @@ v0.2.4 新增 `.sgml` dataset loader。SGML 輸入會自動進入 evaluation mod
 
 目前 SGML 支援 `ESSAY/TEXT/PASSAGE/MISTAKE/WRONG/CORRECTION` 格式，`location` 視為 1-based character offset，且只支援等長 replacement correction。
 
+## WebUI / API
+
+啟動 FastAPI WebUI：
+
+```bash
+uv run spelling-check-web --host 127.0.0.1 --port 8090
+```
+
+預設會讀取環境變數：
+
+```text
+SPELLING_BASE_URL=http://localhost:7072/v1
+SPELLING_MODEL=gemma-4-26b-a4b
+SPELLING_API_KEY
+SPELLING_TIMEOUT
+```
+
+WebUI 支援 textarea 手動輸入，以及 `.json` / `.sgml` file upload。API reference 見 `docs/api.md`。
+
+## Docker
+
+建置 WebUI image：
+
+```bash
+docker build -t llm-spelling-check:v0.2.5 .
+```
+
+Linux 本機開發若要讓容器連到 host 上的 vLLM，可使用 host network：
+
+```bash
+docker run --rm --network host \
+  -e SPELLING_BASE_URL=http://localhost:7072/v1 \
+  -e SPELLING_MODEL=gemma-4-26b-a4b \
+  llm-spelling-check:v0.2.5
+```
+
+一般 bridge network 可改用容器可連到 host 的 endpoint，例如 Docker Desktop 常見的 `host.docker.internal`：
+
+```bash
+docker run --rm -p 8000:8000 \
+  -e SPELLING_BASE_URL=http://host.docker.internal:7072/v1 \
+  -e SPELLING_MODEL=gemma-4-26b-a4b \
+  llm-spelling-check:v0.2.5
+```
+
 ## v0.2.3 baseline
 
 v0.2.3 移除 FIM / Structured Outputs candidate path，預設候選來源只保留 `vllm_top_logprob`。`--score-batch-size` 可以讓使用者自行提高同批送到 vLLM `/completions` 的 scoring prompt 數；預設為 `1`，保留最保守的逐筆 request 行為。

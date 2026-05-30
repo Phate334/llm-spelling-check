@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.2.5
+
+- 新增 FastAPI WebUI，可手動輸入文字或上傳 `.json` / `.sgml`。
+- 新增 `spelling-check-web` script，預設可用環境變數帶入 vLLM endpoint、模型與 timeout。
+- 新增 `/api/parse`、`/api/detect`、`/api/correct`、`/api/evaluate`、`/api/run` 分段 API。
+- WebUI 顯示 suspicious highlight、corrected text、候選修正分數、summary 與 CSC metrics。
+- 新增 Dockerfile 預設啟動 WebUI 服務。
+- 新增 `docs/api.md` API reference 與 v0.2.5 summary。
+- 補充 FastAPI service、API 與 Playwright WebUI smoke tests。
+
 ## v0.2.4
 
 - 新增 `.sgml` dataset loader，支援 `ESSAY/TEXT/PASSAGE/MISTAKE/WRONG/CORRECTION` 格式。
