@@ -4,20 +4,29 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llm-spelling-check"
-version = "0.2.4"
+version = "0.2.5"
 description = "A new Python project"
 
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "fastapi>=0.136.3",
+    "python-multipart>=0.0.29",
+    "uvicorn>=0.48.0",
+]
 
 [project.scripts]
 spelling-check = "spelling_check.cli:main"
+spelling-check-web = "spelling_check.web:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+spelling_check = ["static/*.css", "static/*.html", "static/*.js"]
+
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "mypy>=1.15.0",
     "pre-commit>=4.4.0",
     "pytest>=9.0.1",

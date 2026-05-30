@@ -44,6 +44,10 @@ def load_texts(path: Path) -> list[str]:
 
 def load_sgml_dataset(path: Path) -> SgmlDataset:
     raw = path.read_text(encoding="utf-8")
+    return parse_sgml_dataset(raw, path=path)
+
+
+def parse_sgml_dataset(raw: str, path: Path | None = None) -> SgmlDataset:
     try:
         root = ET.fromstring(f"<ROOT>{raw}</ROOT>")
     except ET.ParseError as exc:
@@ -74,7 +78,7 @@ def load_sgml_dataset(path: Path) -> SgmlDataset:
             )
         )
 
-    return SgmlDataset(path=path, cases=cases)
+    return SgmlDataset(path=path or Path("<memory>"), cases=cases)
 
 
 def _parse_mistake(

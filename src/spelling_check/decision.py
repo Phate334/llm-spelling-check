@@ -25,6 +25,7 @@ def decide_result(
     best = ranked[0]
     second = ranked[1] if len(ranked) > 1 else None
     clear_margin = second is None or best.delta - second.delta >= margin
+    display_candidates = ranked[:3]
 
     if best.delta >= strong_delta and clear_margin:
         return CorrectionResult(
@@ -32,7 +33,7 @@ def decide_result(
             status="corrected",
             confidence="high",
             corrected_text=replace_char(text, best.index, best.candidate_char),
-            corrections=[best],
+            corrections=display_candidates,
             suspicious_chars=suspicious,
         )
 
@@ -42,7 +43,7 @@ def decide_result(
             status="uncertain",
             confidence="medium",
             corrected_text=None,
-            corrections=ranked[:3],
+            corrections=display_candidates,
             suspicious_chars=suspicious,
         )
 
@@ -51,6 +52,6 @@ def decide_result(
         status="no_error",
         confidence="high",
         corrected_text=text,
-        corrections=[],
+        corrections=display_candidates,
         suspicious_chars=suspicious,
     )

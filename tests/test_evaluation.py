@@ -28,7 +28,20 @@ def test_evaluate_csc_counts_detection_correction_and_false_positive() -> None:
                     delta=1.0,
                     original_span="乙",
                     corrected_span="丁",
-                )
+                ),
+                CandidateCorrection(
+                    index=2,
+                    original_char="丙",
+                    candidate_char="庚",
+                    source="test",
+                    original_text="甲乙丙",
+                    candidate_text="甲乙庚",
+                    original_score=-2.0,
+                    candidate_score=-1.5,
+                    delta=0.5,
+                    original_span="丙",
+                    corrected_span="庚",
+                ),
             ],
         ),
         CorrectionResult(

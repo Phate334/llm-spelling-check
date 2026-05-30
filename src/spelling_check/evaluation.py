@@ -52,11 +52,7 @@ def evaluate_csc(results: list[CorrectionResult], gold_texts: list[str]) -> CscM
             if original != gold
         }
         detected = {risk.index for risk in result.suspicious_chars}
-        predicted = {
-            correction.index: correction.candidate_char
-            for correction in result.corrections
-            if result.status == "corrected"
-        }
+        predicted = _applied_corrections(result)
 
         detected_positions += len(detected)
         gold_error_positions += len(gold_errors)
@@ -106,3 +102,14 @@ def _f1(precision: float, recall: float) -> float:
     if precision + recall == 0:
         return 0.0
     return 2 * precision * recall / (precision + recall)
+
+
+def _applied_corrections(result: CorrectionResult) -> dict[int, str]:
+    if result.status != "corrected" or result.corrected_text is None:
+        return {}
+    return {
+        correction.index: correction.candidate_char
+        for correction in result.corrections
+        if correction.index < len(result.corrected_text)
+        and result.corrected_text[correction.index] == correction.candidate_char
+    }

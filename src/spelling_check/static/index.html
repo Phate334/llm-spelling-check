@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LLM Spelling Check</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<main>
+  <h1>LLM Spelling Check</h1>
+  <div class="layout">
+    <section class="panel">
+      <h2>Input</h2>
+      <form id="run-form">
+        <label>
+          Text
+          <textarea id="text" name="text">這份報告需要再檢察一次。</textarea>
+        </label>
+        <label class="file-label">
+          File
+          <input id="file" name="file" type="file" accept=".json,.sgml,.txt">
+        </label>
+        <details class="help-box">
+          <summary>Risk threshold</summary>
+          <p>數值越低越容易把字標成 suspicious，recall 通常會變高，但 false positive 也會增加；數值越高越保守，可能少誤抓但也更容易漏掉錯字。</p>
+        </details>
+        <div class="settings">
+          <label>Base URL<input id="base-url"></label>
+          <label>Model<input id="model"></label>
+          <label>API Key<input id="api-key" type="password" autocomplete="off"></label>
+          <label>Timeout<input id="timeout" type="number" min="1" step="1"></label>
+          <label>Risk Threshold<input id="risk-threshold" type="number" step="0.1" value="7.0"></label>
+          <label>Score Batch Size<input id="score-batch-size" type="number" min="1" step="1" value="1"></label>
+        </div>
+        <div class="actions">
+          <button id="run-button" type="submit">Run</button>
+          <span id="status" class="status"></span>
+        </div>
+      </form>
+    </section>
+    <section class="panel">
+      <h2>Results</h2>
+      <details class="help-box metrics-help">
+        <summary>Metrics</summary>
+        <dl>
+          <dt>Detection Precision</dt>
+          <dd>被標成錯字的位置中，有多少真的錯。</dd>
+          <dt>Detection Recall</dt>
+          <dd>所有真正錯字中，有多少被找出來。</dd>
+          <dt>Detection F1</dt>
+          <dd>Precision 和 Recall 的綜合分數。</dd>
+          <dt>Correction Precision</dt>
+          <dd>模型實際修改的位置中，有多少改成正確答案。</dd>
+          <dt>Correction Recall</dt>
+          <dd>所有真正錯字中，有多少被改成正確答案。</dd>
+          <dt>FPR</dt>
+          <dd>正常字被誤標成 suspicious 的比例。</dd>
+        </dl>
+      </details>
+      <div id="summary" class="summary"></div>
+      <div id="metrics"></div>
+      <div id="cases" class="empty">No results yet.</div>
+    </section>
+  </div>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>
