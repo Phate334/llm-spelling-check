@@ -8,7 +8,7 @@ v0.2.3 是 no-FIM baseline 整理版：
 
 - 移除 FIM / Structured Outputs candidate path。
 - 候選來源只保留 `vllm_top_logprob`。
-- 新增 `score_batch_size`，本輪使用預設值 `1`。
+- 新增 `score_batch_size`，目前測試皆使用預設值 `1`。
 - 評估摘要改用 spelling check / CSC 常見指標。
 
 ## 指標說明
@@ -23,84 +23,67 @@ v0.2.3 是 no-FIM baseline 整理版：
 
 `corrected`、`uncertain`、`no_error` 仍保留作為 pipeline 狀態，但不再作為主要品質指標。
 
-## 本輪結果
+## 測試結果
 
-測試模型：
+共同參數：
 
 ```text
-model: gemma-4-26b-a4b
-base_url: http://localhost:7072/v1
+candidate_sources: vllm_top_logprob only
+fim: removed
 window_radius: 12
 score_batch_size: 1
-candidate_sources: vllm_top_logprob only
 ```
 
 CSC metrics：
 
 ```text
-detection_precision: 0.1000
-detection_recall: 0.6667
-detection_f1: 0.1739
-correction_precision: 0.2500
-correction_recall: 0.1111
-correction_f1: 0.1538
-false_positive_rate: 0.2700
+model                 det_p   det_r   det_f1  corr_p  corr_r  corr_f1  fpr
+gemma-4-26b-a4b       0.1000  0.6667  0.1739  0.2500  0.1111  0.1538   0.2700
+google/gemma-3-270m   0.1525  1.0000  0.2647  0.0000  0.0000  0.0000   0.2500
+```
 
-detected_positions: 60
-gold_error_positions: 9
-correct_detected_positions: 6
-predicted_corrections: 4
-gold_corrections: 9
-correct_corrections: 1
-false_positive_positions: 54
-gold_non_error_positions: 200
+計數：
+
+```text
+model                 detected  gold_errors  correct_detected  predicted  correct_corr  false_pos
+gemma-4-26b-a4b       60        9            6                 4          1             54
+google/gemma-3-270m   59        9            9                 0          0             50
 ```
 
 Pipeline 與 vLLM I/O：
 
 ```text
-corrected: 4
-uncertain: 5
-no_error: 3
-score_calls: 147
-scored_prompts: 147
-prompts_per_call: 1.0000
-input_chars: 19129
-output_chars: 858375
-prompt_tokens: 1815
-completion_tokens: 147
-total_tokens: 1962
+model                 corrected  uncertain  no_error  score_calls  prompts  prompt_tokens  total_tokens
+gemma-4-26b-a4b       4          5          3         147          147      1815           1962
+google/gemma-3-270m   0          9          3         188          188      2518           2706
 ```
 
 詳細報告：
 
 - `gemma-4-26b-a4b-window12.md`
 - `gemma-4-26b-a4b-window12-calls.jsonl`
+- `google-gemma-3-270m-window12.md`
+- `google-gemma-3-270m-window12-calls.jsonl`
 
 ## 與 v0.2.2 的差異
 
 ### 評估口徑改變
 
-v0.2.2 summary 主要使用 `eval_ok`、`eval_wrong`、`eval_missed`、`eval_uncertain` 這類案例層級標記。v0.2.3 改成 CSC metrics 後，可以更清楚拆開 detection 與 correction：
+v0.2.2 summary 主要使用 `eval_ok`、`eval_wrong`、`eval_missed`、`eval_uncertain` 這類案例層級標記。v0.2.3 改成 CSC metrics 後，可以更清楚拆開 detection 與 correction。
 
-- Detection recall `0.6667`：9 個 gold 錯字位置中，有 6 個被 suspicious detector 抓到。
-- Detection precision `0.1000`：但總共標了 60 個 suspicious positions，只有 6 個是真錯字，false positive 很多。
-- Correction precision `0.2500`：4 次自動修正中只有 1 次完全正確。
-- Correction recall `0.1111`：9 個 gold 錯字中只有 1 個被自動修正正確。
-
-這個新口徑讓問題更明確：v0.2.3 baseline 的 detection 偏寬，correction 又容易被 `vllm_top_logprob` 雜訊候選帶偏。
+這個新口徑讓問題更明確：目前 baseline 的 detection 偏寬，correction 又容易被 `vllm_top_logprob` 雜訊候選帶偏。
 
 ### FIM 已移除
 
-v0.2.2 包含 8 輪 FIM 測試與 1 輪 no-FIM 追加測試。綜合觀察是 FIM 沒有穩定改善 corrected 數，且顯著增加 calls 與 output payload。
+v0.2.2 包含 FIM 測試與 no-FIM 追加測試。綜合觀察是 FIM 沒有穩定改善 corrected 數，且顯著增加 calls 與 output payload。
 
-v0.2.3 直接移除 FIM 後，本輪 calls log 不再包含：
+v0.2.3 直接移除 FIM 後，calls log 不再包含：
 
 - `fim_candidates`
 - `structured_outputs`
 - JSON candidate generation
 
-這讓 baseline 更乾淨，也比較符合後續 v0.3.0 要比較多候選來源的需求。
+這讓 baseline 更乾淨，也比較適合後續逐步改善候選來源、prefilter、decision rule 與評估流程。
 
 ### 與 v0.2.2 no-FIM 追加測試相比
 
@@ -114,24 +97,28 @@ v0.2.3         4          5          3         147                858375
 
 pipeline 狀態分布沒有本質差異，仍是 4 corrected、5 uncertain、3 no_error。v0.2.3 的 call 數較低，主要是目前 pipeline 先收集同一句要評分的 windows，再去重後 scoring；`score_batch_size=1` 時仍是逐筆 request，但 `score_calls` 與 `scored_prompts` 已分開記錄。
 
-品質觀察也沒有翻轉：
+## 270M 追加觀察
 
-- case 03 `提->屜` 仍是唯一明確正確自動修正。
-- case 04、06、07 仍有自動誤修。
-- case 02、05、08、09 等仍沒有被正確自動修正。
-- top candidate 仍常出現不合理替換，例如 `公->把`、`飯->一`、`汽->子`。
+本輪使用 `http://localhost:8001/v1` 上實際註冊的 model id：`google/gemma-3-270m`。
+
+- 270M 抓到全部 9 個 gold error positions，detection recall 達 `1.0000`。
+- Detection precision 仍低，59 個 suspicious positions 中只有 9 個是真錯字，FPR 為 `0.2500`。
+- 270M 沒有自動修正任何案例，9 個錯字案例全部進 `uncertain`。
+- 多個 top candidate 其實抓到正確字，例如 `提->屜`、`相->箱`、`汽->氣`、`結->節`，但 decision rule 沒有放行成 corrected。
+- 這代表 270M 在目前流程下比較像 high-recall detector / candidate suggester，不是可直接自動修正的模型。
+- 270M 的 score calls 為 `188`，高於 26B 的 `147`，原因是它產生較多可評分 windows；成本不只取決於模型大小，也取決於 suspicious/candidate 數量。
 
 ## 主要觀察
 
 - v0.2.3 的清理沒有改變模型能力本身；它讓 baseline 更乾淨，但品質瓶頸仍在。
 - `vllm_top_logprob` 作為唯一候選來源仍不可靠，會把不少非錯字位置推成候選。
-- Detection recall 尚可，但 precision 很低，表示 risk threshold / suspicious selection 太寬。
-- Correction precision 與 recall 都低，表示即使抓到錯字位置，也常缺少正確候選或候選排序不穩。
-- 移除 FIM 後成本下降、流程更單純，但沒有改善正確率。
-- `score_batch_size=1` 保持保守行為；後續可以提高 batch size 測試 throughput，但這只改善 request 數與速度，不會直接改善品質。
+- 26B 有少量自動修正，但誤修不少；270M 不自動修正，但 recall 較高且部分 correct candidate 有進入 top candidate。
+- Detection precision 與 FPR 仍是最需要優先改善的問題。
+- Correction precision / recall 都低，表示即使抓到錯字位置，也需要更好的候選來源、候選篩選與 decision rule。
+- `score_batch_size=1` 保持保守行為；提高 batch size 只改善 request 數與速度，不會直接改善品質。
 
 ## 結論
 
 v0.2.3 達成了整理 baseline 的目的：移除 FIM、保留單一 `vllm_top_logprob` 候選來源、改用 CSC metrics、並把 `score_calls` 與 `scored_prompts` 分開記錄。
 
-和 v0.2.2 的核心觀察一致：主要問題不是 FIM 是否存在，而是 `vllm_top_logprob` 候選本身太雜，以及 suspicious detection false positive 過高。v0.3.0 應把重點放在更多候選來源、candidate prefilter、source-aware decision，以及和 SoftMaskedBERT 舊服務的同指標比較。
+新增 270M 測試後，結論更清楚：目前流程的差異主要來自 detection/candidate/decision 的互動，不是單純模型越大越好。v0.3.0 應先改善 false positive 控制、scoring normalization、alignment robustness、candidate budget 與可重現的 evaluation/report CLI。

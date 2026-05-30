@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      HF_TOKEN: ${HF_TOKEN:?Set HF_TOKEN for gated Hugging Face models}
+      HF_TOKEN: ${HF_TOKEN:-}
     volumes:
       - ${HOME}/.cache:/root/.cache
     command: >-
@@ -16,6 +16,5 @@ services:
       --language-model-only
       --max-model-len 8192
       --gpu-memory-utilization 0.90
-      --enforce-eager
     devices:
       - nvidia.com/gpu=all

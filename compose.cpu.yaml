@@ -1,0 +1,28 @@
+services:
+  vllm-cpu:
+    image: vllm-cpu-env:v0.22.0
+    build:
+      context: ./vllm
+      dockerfile: docker/Dockerfile.cpu
+      target: vllm-openai
+      args:
+        PYTHON_VERSION: "3.12"
+        VLLM_CPU_X86: "${VLLM_CPU_X86:-0}"
+        VLLM_CPU_ARM_BF16: "${VLLM_CPU_ARM_BF16:-0}"
+        max_jobs: "${MAX_JOBS:-8}"
+    platform: "${VLLM_CPU_PLATFORM:-linux/amd64}"
+    init: true
+    ports:
+      - "8001:8000"
+    shm_size: "4g"
+    environment:
+      HF_TOKEN: "${HF_TOKEN:-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}"
+    volumes:
+      - "${HOME}/.cache/huggingface:/root/.cache/huggingface"
+    command: >-
+      google/gemma-3-270m
+      --served-model-name google/gemma-3-270m
+      --host 0.0.0.0
+      --language-model-only
+      --max-model-len 8192
+      --gpu-memory-utilization 0.05
