@@ -6,6 +6,8 @@ import pytest
 
 from spelling_check.dataset import load_sgml_dataset, load_texts
 
+FIXTURE_DIR = Path(__file__).parent / "fixtures"
+
 
 def test_load_texts_reads_json_array(tmp_path: Path) -> None:
     path = tmp_path / "input.json"
@@ -21,18 +23,18 @@ def test_load_texts_reads_nonempty_lines(tmp_path: Path) -> None:
     assert load_texts(path) == ["甲", "乙"]
 
 
-def test_load_sgml_dataset_reads_training_fixture() -> None:
-    dataset = load_sgml_dataset(Path("data/fiona_wrong_results_Training.sgml"))
+def test_load_sgml_dataset_reads_sample_fixture() -> None:
+    dataset = load_sgml_dataset(FIXTURE_DIR / "sample_sentences.sgml")
 
-    assert len(dataset.cases) == 17
-    assert dataset.gold_error_count == 24
+    assert len(dataset.cases) == 4
+    assert dataset.gold_error_count == 4
     first = dataset.cases[0]
-    assert first.case_id == "fiona_wrong_results-1"
+    assert first.case_id == "sample-1"
     assert first.mistakes[0].location == 11
     assert first.mistakes[0].index == 10
-    assert first.mistakes[0].wrong == "雞"
-    assert first.input_text[10] == "雞"
-    assert "質的績效管理" in first.gold_text
+    assert first.mistakes[0].wrong == "非"
+    assert first.input_text[10] == "非"
+    assert first.gold_text == "我今天早上喝了一杯咖啡，然後去公園散步。"
 
 
 def test_load_sgml_dataset_rejects_unknown_passage_id(tmp_path: Path) -> None:

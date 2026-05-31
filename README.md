@@ -26,13 +26,15 @@ SPELLING_WEB_HOST=127.0.0.1
 SPELLING_WEB_PORT=8000
 ```
 
+本 repo 不再追蹤 `data/` 內的資料檔；請先參考 `data/README.md` 放入自己的測試資料。
+
 ## CLI 功能
 
 `spelling-check` 可以：
 
 - 直接檢查一個或多個句子
 - 讀取 JSON 字串陣列、逐行文字檔或 SGML 評估資料
-- 使用內建測試資料 `data/sample_sentences.json`
+- 讀取你自行放在 `data/` 的本機測試資料
 - 輸出一般文字或 JSON Lines
 - 對 `.sgml` 輸入輸出單一 JSON evaluation object 與 CSC metrics
 - 調整 vLLM endpoint、模型名稱、API key 與 timeout
@@ -55,11 +57,13 @@ uv run spelling-check \
   "這份報告需要再檢察一次。"
 ```
 
-跑內建測試資料：
+跑你放在 `data/` 的本機測試資料：
 
 ```bash
 uv run spelling-check --use-samples
 ```
+
+預設會讀 `data/sample_sentences.json`；若檔案不存在，CLI 會提示你改用 `--input-file` 或先把資料放進 `data/`。
 
 讀取檔案並輸出 JSON Lines：
 

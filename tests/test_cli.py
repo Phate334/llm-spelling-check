@@ -5,6 +5,8 @@ import sys
 from pathlib import Path
 from typing import Any, cast
 
+import pytest
+
 from spelling_check import cli
 from spelling_check.models import CandidateCorrection, CharRisk, CorrectionResult
 from spelling_check.pipeline import SpellingCheckConfig
@@ -112,6 +114,14 @@ def test_parse_args_reads_environment_defaults(monkeypatch: Any) -> None:
     assert args.model == "gemma-env"
     assert args.api_key == "secret-from-env"
     assert args.timeout == 12.5
+
+
+def test_use_samples_requires_local_sample_file(monkeypatch: Any) -> None:
+    monkeypatch.setattr(cli, "DEFAULT_SAMPLE_FILE", Path("/tmp/missing-samples.json"))
+    monkeypatch.setattr(sys, "argv", ["spelling-check", "--use-samples"])
+
+    with pytest.raises(SystemExit, match="repo 已不再內建 sample data"):
+        cli.main()
 
 
 def test_cli_options_override_environment_and_feed_client_config(

@@ -1,0 +1,39 @@
+<ESSAY>
+<TEXT>
+<PASSAGE id="sample-1">我今天早上喝了一杯咖非，然後去公圜散步。</PASSAGE>
+</TEXT>
+<MISTAKE id="sample-1" location="11">
+<WRONG>非</WRONG>
+<CORRECTION>啡</CORRECTION>
+</MISTAKE>
+<MISTAKE id="sample-1" location="17">
+<WRONG>圜</WRONG>
+<CORRECTION>園</CORRECTION>
+</MISTAKE>
+</ESSAY>
+
+<ESSAY>
+<TEXT>
+<PASSAGE id="sample-2">這份報告需要再檢察一次，避免留下錯字。</PASSAGE>
+</TEXT>
+<MISTAKE id="sample-2" location="8">
+<WRONG>檢察</WRONG>
+<CORRECTION>檢查</CORRECTION>
+</MISTAKE>
+</ESSAY>
+
+<ESSAY>
+<TEXT>
+<PASSAGE id="sample-3">請把會議紀錄寄到我的信相。</PASSAGE>
+</TEXT>
+<MISTAKE id="sample-3" location="11">
+<WRONG>信相</WRONG>
+<CORRECTION>信箱</CORRECTION>
+</MISTAKE>
+</ESSAY>
+
+<ESSAY>
+<TEXT>
+<PASSAGE id="sample-4">今天下午可能會下雨，出門記得帶傘。</PASSAGE>
+</TEXT>
+</ESSAY>

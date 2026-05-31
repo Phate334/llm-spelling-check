@@ -50,7 +50,9 @@ def parse_args() -> argparse.Namespace:
         help="JSON array, newline-delimited text, or SGML evaluation input",
     )
     parser.add_argument(
-        "--use-samples", action="store_true", help="run data/sample_sentences.json"
+        "--use-samples",
+        action="store_true",
+        help="run local data/sample_sentences.json if you placed it there",
     )
     parser.add_argument("--base-url", default=env_settings.base_url)
     parser.add_argument("--model", default=env_settings.model)
@@ -76,6 +78,11 @@ def load_inputs(args: argparse.Namespace) -> list[str]:
     if args.input_file:
         return load_texts(args.input_file)
     if args.use_samples:
+        if not DEFAULT_SAMPLE_FILE.is_file():
+            raise SystemExit(
+                "找不到 data/sample_sentences.json。repo 已不再內建 sample data，"
+                "請先把檔案放到 data/，或改用 --input-file。"
+            )
         return load_texts(DEFAULT_SAMPLE_FILE)
     raise SystemExit("請提供句子、--input-file，或 --use-samples。")
 

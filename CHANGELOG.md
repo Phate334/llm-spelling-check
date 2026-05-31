@@ -2,6 +2,7 @@
 
 ## v0.2.6
 
+- repo 不再追蹤 `data/` 內的資料檔，只保留目錄說明與忽略規則；測試 fixture 改移到 `tests/fixtures/`。
 - 導入 `pydantic-settings`，統一管理 `SPELLING_*` 與 `SPELLING_WEB_*` 預設值；CLI、WebUI 與 API 預設 model settings 改用同一組環境設定來源。
 - 整理 README / API 文件與 CLI 說明：補上共享環境變數覆寫規則，並明確標示 JSON 字串陣列、API key、timeout 與各項 tuning 參數的目前行為。
 - Docker image 不再內建 `data/` 內容；build context 會排除 runtime data，image 只保留空的 `/app/data`，`compose.yaml` 改以 bind mount 掛入 `./data`。
