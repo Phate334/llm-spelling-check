@@ -21,7 +21,7 @@ services:
       - "${HOME}/.cache/huggingface:/root/.cache/huggingface"
     command: >-
       google/gemma-3-270m
-      --served-model-name google/gemma-3-270m
+      --served-model-name gemma-3-270m
       --host 0.0.0.0
       --language-model-only
       --max-model-len 8192

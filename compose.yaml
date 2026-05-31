@@ -7,8 +7,8 @@ services:
     ports:
       - "8090:8000"
     environment:
-      SPELLING_BASE_URL: ${SPELLING_BASE_URL:-http://host.docker.internal:7072/v1}
-      SPELLING_MODEL: ${SPELLING_MODEL:-gemma-4-26b-a4b}
+      SPELLING_BASE_URL: ${SPELLING_BASE_URL:-http://host.docker.internal:8001/v1}
+      SPELLING_MODEL: ${SPELLING_MODEL:-gemma-3-270m}
       SPELLING_API_KEY: ${SPELLING_API_KEY:-}
       SPELLING_TIMEOUT: ${SPELLING_TIMEOUT:-30}
     extra_hosts:
