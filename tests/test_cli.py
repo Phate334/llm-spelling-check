@@ -112,3 +112,66 @@ def test_parse_args_reads_environment_defaults(monkeypatch: Any) -> None:
     assert args.model == "gemma-env"
     assert args.api_key == "secret-from-env"
     assert args.timeout == 12.5
+
+
+def test_cli_options_override_environment_and_feed_client_config(
+    monkeypatch: Any,
+) -> None:
+    monkeypatch.setenv("SPELLING_BASE_URL", "http://env.example/v1")
+    monkeypatch.setenv("SPELLING_MODEL", "gemma-env")
+    monkeypatch.setenv("SPELLING_API_KEY", "secret-from-env")
+    monkeypatch.setenv("SPELLING_TIMEOUT", "12.5")
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "spelling-check",
+            "--base-url",
+            "http://cli.example/v1",
+            "--model",
+            "gemma-cli",
+            "--api-key",
+            "cli-secret",
+            "--timeout",
+            "8.5",
+            "--prompt-logprobs",
+            "7",
+            "--risk-threshold",
+            "8.0",
+            "--suspicious-limit",
+            "2",
+            "--candidate-limit",
+            "3",
+            "--window-radius",
+            "4",
+            "--score-batch-size",
+            "2",
+            "--strong-delta",
+            "1.2",
+            "--weak-delta",
+            "0.6",
+            "--margin",
+            "0.25",
+            "--json",
+            "測試句子",
+        ],
+    )
+
+    args = cli.parse_args()
+    client = cli._build_client(args)
+    config = cli._build_config(args)
+
+    assert args.json is True
+    assert client.base_url == "http://cli.example/v1"
+    assert client.model == "gemma-cli"
+    assert client.api_key == "cli-secret"
+    assert client.timeout == 8.5
+    assert config.prompt_logprobs == 7
+    assert config.risk_threshold == 8.0
+    assert config.suspicious_limit == 2
+    assert config.candidate_limit == 3
+    assert config.window_radius == 4
+    assert config.score_batch_size == 2
+    assert config.strong_delta == 1.2
+    assert config.weak_delta == 0.6
+    assert config.margin == 0.25

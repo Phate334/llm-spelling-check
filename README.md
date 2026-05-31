@@ -2,25 +2,28 @@
 
 用 vLLM `prompt_logprobs` 做中文錯字偵測與修正的 POC。
 
-預設使用：
-
-```text
-model: google/gemma-4-E4B
-endpoint: http://localhost:8000/v1
-```
-
 ## 安裝
 
-所有套件都用 `uv` 安裝到專案本地的 `./.venv`：
+uv sync or Docker
 
-```bash
-uv sync --dev --python 3.13
+## 共同設定
+
+`spelling-check` 與 `spelling-check-web` 都會先讀取環境變數作為預設值；如果有明確傳入 CLI 參數，則以 CLI 參數為準。
+
+共享的 model / client 設定：
+
+```text
+SPELLING_BASE_URL=http://localhost:7072/v1
+SPELLING_MODEL=gemma-4-26b-a4b
+SPELLING_API_KEY
+SPELLING_TIMEOUT=30
 ```
 
-啟動 vLLM：
+WebUI 啟動位址另外可用：
 
-```bash
-docker compose up vllm
+```text
+SPELLING_WEB_HOST=127.0.0.1
+SPELLING_WEB_PORT=8000
 ```
 
 ## CLI 功能
@@ -28,12 +31,13 @@ docker compose up vllm
 `spelling-check` 可以：
 
 - 直接檢查一個或多個句子
-- 讀取 JSON array、逐行文字檔或 SGML 評估資料
+- 讀取 JSON 字串陣列、逐行文字檔或 SGML 評估資料
 - 使用內建測試資料 `data/sample_sentences.json`
 - 輸出一般文字或 JSON Lines
 - 對 `.sgml` 輸入輸出單一 JSON evaluation object 與 CSC metrics
-- 調整 vLLM endpoint、模型名稱、risk threshold、修正決策門檻
-- 調整 vLLM scoring batch size；預設 `1`
+- 調整 vLLM endpoint、模型名稱、API key 與 timeout
+- 調整 prompt logprobs、risk threshold、suspicious limit、candidate limit 與 window radius
+- 調整 vLLM scoring batch size，以及 strong / weak delta、margin 等修正決策門檻
 
 ## 執行範例
 
@@ -83,12 +87,6 @@ uv run spelling-check \
   "這間飯店的服誤一直都很好。"
 ```
 
-## v0.2.4 SGML evaluation
-
-v0.2.4 新增 `.sgml` dataset loader。SGML 輸入會自動進入 evaluation mode，輸出單一 JSON object，包含 dataset 摘要、CSC metrics，以及每筆 case 的 input/gold/result/candidates。
-
-目前 SGML 支援 `ESSAY/TEXT/PASSAGE/MISTAKE/WRONG/CORRECTION` 格式，`location` 視為 1-based character offset，且只支援等長 replacement correction。
-
 ## WebUI / API
 
 啟動 FastAPI WebUI：
@@ -97,23 +95,14 @@ v0.2.4 新增 `.sgml` dataset loader。SGML 輸入會自動進入 evaluation mod
 uv run spelling-check-web --host 127.0.0.1 --port 8090
 ```
 
-預設會讀取環境變數：
-
-```text
-SPELLING_BASE_URL=http://localhost:7072/v1
-SPELLING_MODEL=gemma-4-26b-a4b
-SPELLING_API_KEY
-SPELLING_TIMEOUT
-```
-
-WebUI 支援 textarea 手動輸入，以及 `.json` / `.sgml` file upload。API reference 見 `docs/api.md`。
+共享的 model / client 設定位於前面的「共同設定」；WebUI 啟動位址可另外用 `SPELLING_WEB_HOST`、`SPELLING_WEB_PORT` 覆寫。WebUI 支援 textarea 手動輸入，以及 `.json` / `.sgml` file upload。API reference 見 `docs/api.md`。
 
 ## Docker
 
 建置 WebUI image：
 
 ```bash
-docker build -t llm-spelling-check:v0.2.5 .
+docker build -t llm-spelling-check:v0.2.6 .
 ```
 
 Linux 本機開發若要讓容器連到 host 上的 vLLM，可使用 host network：
@@ -122,7 +111,7 @@ Linux 本機開發若要讓容器連到 host 上的 vLLM，可使用 host networ
 docker run --rm --network host \
   -e SPELLING_BASE_URL=http://localhost:7072/v1 \
   -e SPELLING_MODEL=gemma-4-26b-a4b \
-  llm-spelling-check:v0.2.5
+  llm-spelling-check:v0.2.6
 ```
 
 一般 bridge network 可改用容器可連到 host 的 endpoint，例如 Docker Desktop 常見的 `host.docker.internal`：
@@ -131,18 +120,5 @@ docker run --rm --network host \
 docker run --rm -p 8000:8000 \
   -e SPELLING_BASE_URL=http://host.docker.internal:7072/v1 \
   -e SPELLING_MODEL=gemma-4-26b-a4b \
-  llm-spelling-check:v0.2.5
-```
-
-## v0.2.3 baseline
-
-v0.2.3 移除 FIM / Structured Outputs candidate path，預設候選來源只保留 `vllm_top_logprob`。`--score-batch-size` 可以讓使用者自行提高同批送到 vLLM `/completions` 的 scoring prompt 數；預設為 `1`，保留最保守的逐筆 request 行為。
-
-可用環境變數：
-
-```text
-SPELLING_BASE_URL
-SPELLING_MODEL
-SPELLING_API_KEY
-SPELLING_TIMEOUT
+  llm-spelling-check:v0.2.6
 ```
