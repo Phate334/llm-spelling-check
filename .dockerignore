@@ -1,2 +1,35 @@
-# Exclude the project virtual environment from image builds
-.venv
+# Local environments and Python build outputs
+.venv/
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# VCS and CI metadata
+.git/
+.github/
+.gitignore
+.dockerignore
+.pre-commit-config.yaml
+
+# Local documentation and development-only content
+docs/
+tests/
+vllm/
+AGENTS.md
+CHANGELOG.md
+CONTRIBUTING.md
+compose.yaml
+compose.cpu.yaml
+compose.gpu.yaml
+Dockerfile
+
+# Keep the runtime image focused on the packaged app and small built-in sample data.
