@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Protocol, cast
@@ -19,9 +18,7 @@ from spelling_check.models import (
 )
 from spelling_check.pipeline import PromptScorer, SpellingCheckConfig, spelling_check
 from spelling_check.risk import compute_char_risks, select_suspicious_chars
-
-DEFAULT_BASE_URL = "http://localhost:7072/v1"
-DEFAULT_MODEL = "gemma-4-26b-a4b"
+from spelling_check.settings import load_env_settings
 
 
 class ClientFactory(Protocol):
@@ -55,16 +52,15 @@ class ModelSettings:
 
 def default_settings(data: dict[str, Any] | None = None) -> ModelSettings:
     data = data or {}
+    env_settings = load_env_settings()
     raw_config = data.get("config")
     config_data: dict[str, Any] = raw_config if isinstance(raw_config, dict) else {}
-    api_key = data.get("api_key") or os.getenv("SPELLING_API_KEY")
+    api_key = data.get("api_key") or env_settings.normalized_api_key
     return ModelSettings(
-        base_url=str(
-            data.get("base_url") or os.getenv("SPELLING_BASE_URL") or DEFAULT_BASE_URL
-        ),
-        model=str(data.get("model") or os.getenv("SPELLING_MODEL") or DEFAULT_MODEL),
+        base_url=str(data.get("base_url") or env_settings.base_url),
+        model=str(data.get("model") or env_settings.model),
         api_key=str(api_key) if api_key else None,
-        timeout=float(data.get("timeout") or os.getenv("SPELLING_TIMEOUT") or "30"),
+        timeout=float(data.get("timeout") or env_settings.timeout),
         config=SpellingCheckConfig(
             prompt_logprobs=int(config_data.get("prompt_logprobs", 5)),
             risk_threshold=float(config_data.get("risk_threshold", 7.0)),

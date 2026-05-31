@@ -1,6 +1,6 @@
 # API Reference
 
-v0.2.5 提供 FastAPI WebUI 與分段 API。範例預設使用：
+v0.2.6 提供 FastAPI WebUI 與分段 API。範例預設使用：
 
 ```json
 {

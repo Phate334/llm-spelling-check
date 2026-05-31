@@ -98,6 +98,20 @@ def test_correct_and_evaluate_preserves_result_details() -> None:
     assert metrics["correction_recall"] == 1.0
 
 
+def test_default_settings_reads_environment(monkeypatch: Any) -> None:
+    monkeypatch.setenv("SPELLING_BASE_URL", "http://env.example/v1")
+    monkeypatch.setenv("SPELLING_MODEL", "gemma-env")
+    monkeypatch.setenv("SPELLING_API_KEY", "env-secret")
+    monkeypatch.setenv("SPELLING_TIMEOUT", "45")
+
+    settings = default_settings()
+
+    assert settings.base_url == "http://env.example/v1"
+    assert settings.model == "gemma-env"
+    assert settings.api_key == "env-secret"
+    assert settings.timeout == 45.0
+
+
 def test_run_all_without_gold_returns_null_metrics() -> None:
     result = run_all(
         text="咖非",

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import sys
+from types import SimpleNamespace
 from typing import Any
 
 from fastapi.testclient import TestClient
 
 from spelling_check.service import ModelSettings
+from spelling_check import web
 from spelling_check.web import create_app
 
 
@@ -155,3 +158,21 @@ def test_parse_and_evaluate_endpoints() -> None:
     assert corrected.status_code == 200
     assert evaluated.status_code == 200
     assert evaluated.json()["metrics"]["detection_f1"] == 1.0
+
+
+def test_main_reads_web_environment_defaults(monkeypatch: Any) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_run(app_path: str, **kwargs: object) -> None:
+        captured["app_path"] = app_path
+        captured.update(kwargs)
+
+    monkeypatch.setenv("SPELLING_WEB_HOST", "0.0.0.0")
+    monkeypatch.setenv("SPELLING_WEB_PORT", "8099")
+    monkeypatch.setattr(sys, "argv", ["spelling-check-web"])
+    monkeypatch.setitem(sys.modules, "uvicorn", SimpleNamespace(run=fake_run))
+
+    assert web.main() == 0
+    assert captured["app_path"] == "spelling_check.web:app"
+    assert captured["host"] == "0.0.0.0"
+    assert captured["port"] == 8099

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
@@ -24,15 +23,17 @@ from spelling_check.service import (
     parse_cases,
     run_all,
 )
+from spelling_check.settings import load_env_settings
 
 STATIC_DIR = Path(__file__).with_name("static")
 INDEX_FILE = STATIC_DIR / "index.html"
+APP_VERSION = "0.2.6"
 
 
 def create_app(
     client_factory: ClientFactory = default_client_factory,
 ) -> FastAPI:
-    app = FastAPI(title="LLM Spelling Check", version="0.2.5")
+    app = FastAPI(title="LLM Spelling Check", version=APP_VERSION)
     app.state.client_factory = client_factory
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
@@ -116,11 +117,10 @@ app = create_app()
 
 
 def main() -> int:
+    env_settings = load_env_settings()
     parser = argparse.ArgumentParser(description="Run the spelling check WebUI.")
-    parser.add_argument("--host", default=os.getenv("SPELLING_WEB_HOST", "127.0.0.1"))
-    parser.add_argument(
-        "--port", type=int, default=int(os.getenv("SPELLING_WEB_PORT", "8000"))
-    )
+    parser.add_argument("--host", default=env_settings.web_host)
+    parser.add_argument("--port", type=int, default=env_settings.web_port)
     parser.add_argument("--reload", action="store_true")
     args = parser.parse_args()
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.6
+
+- 導入 `pydantic-settings`，集中管理 `SPELLING_*` 環境變數預設值。
+- CLI、WebUI 啟動參數與 API 預設 model settings 改用同一組環境設定來源。
+- 更新 Docker / API 文件與 compose image tag 到 v0.2.6。
+
 ## v0.2.5
 
 - 新增 FastAPI WebUI，可手動輸入文字或上傳 `.json` / `.sgml`。

@@ -1,6 +1,6 @@
 services:
   web:
-    image: ghcr.io/phate334/llm-spelling-check:v0.2.5
+    image: ghcr.io/phate334/llm-spelling-check:v0.2.6
     init: true
     ports:
       - "8090:8000"

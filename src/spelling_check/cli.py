@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
 from typing import cast
 
@@ -11,9 +10,8 @@ from spelling_check.dataset import SgmlDataset, load_sgml_dataset, load_texts
 from spelling_check.evaluation import evaluate_csc
 from spelling_check.models import CorrectionResult
 from spelling_check.pipeline import SpellingCheckConfig, spelling_check
+from spelling_check.settings import load_env_settings
 
-DEFAULT_BASE_URL = "http://localhost:8000/v1"
-DEFAULT_MODEL = "google/gemma-4-E4B"
 DEFAULT_SAMPLE_FILE = (
     Path(__file__).resolve().parents[2] / "data" / "sample_sentences.json"
 )
@@ -41,6 +39,7 @@ def main() -> int:
 
 
 def parse_args() -> argparse.Namespace:
+    env_settings = load_env_settings()
     parser = argparse.ArgumentParser(
         description="Chinese spelling check POC using vLLM prompt logprobs."
     )
@@ -53,14 +52,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--use-samples", action="store_true", help="run data/sample_sentences.json"
     )
-    parser.add_argument(
-        "--base-url", default=os.getenv("SPELLING_BASE_URL", DEFAULT_BASE_URL)
-    )
-    parser.add_argument("--model", default=os.getenv("SPELLING_MODEL", DEFAULT_MODEL))
-    parser.add_argument("--api-key", default=os.getenv("SPELLING_API_KEY"))
-    parser.add_argument(
-        "--timeout", type=float, default=float(os.getenv("SPELLING_TIMEOUT", "30"))
-    )
+    parser.add_argument("--base-url", default=env_settings.base_url)
+    parser.add_argument("--model", default=env_settings.model)
+    parser.add_argument("--api-key", default=env_settings.normalized_api_key)
+    parser.add_argument("--timeout", type=float, default=env_settings.timeout)
     parser.add_argument("--prompt-logprobs", type=int, default=5)
     parser.add_argument("--risk-threshold", type=float, default=7.0)
     parser.add_argument("--suspicious-limit", type=int, default=5)

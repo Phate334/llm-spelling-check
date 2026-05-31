@@ -97,3 +97,18 @@ def test_non_sgml_json_lines_behavior_is_unchanged(
     lines = capsys.readouterr().out.strip().splitlines()
     assert len(lines) == 1
     assert json.loads(lines[0])["input"] == "甲乙"
+
+
+def test_parse_args_reads_environment_defaults(monkeypatch: Any) -> None:
+    monkeypatch.setenv("SPELLING_BASE_URL", "http://env.example/v1")
+    monkeypatch.setenv("SPELLING_MODEL", "gemma-env")
+    monkeypatch.setenv("SPELLING_API_KEY", "secret-from-env")
+    monkeypatch.setenv("SPELLING_TIMEOUT", "12.5")
+    monkeypatch.setattr(sys, "argv", ["spelling-check", "測試句子"])
+
+    args = cli.parse_args()
+
+    assert args.base_url == "http://env.example/v1"
+    assert args.model == "gemma-env"
+    assert args.api_key == "secret-from-env"
+    assert args.timeout == 12.5
