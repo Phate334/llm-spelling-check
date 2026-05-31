@@ -37,15 +37,15 @@ def create_app(
     app.state.client_factory = client_factory
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-    @app.get("/", response_class=HTMLResponse)
+    @app.get("/", response_class=HTMLResponse)  # type: ignore[misc]
     async def index() -> HTMLResponse:
         return HTMLResponse(INDEX_FILE.read_text(encoding="utf-8"))
 
-    @app.get("/api/defaults")
+    @app.get("/api/defaults")  # type: ignore[misc]
     async def api_defaults() -> dict[str, object]:
         return {"settings": default_settings({}).public_dict()}
 
-    @app.post("/api/parse")
+    @app.post("/api/parse")  # type: ignore[misc]
     async def api_parse(request: Request) -> dict[str, object]:
         payload = await _read_input(request)
         try:
@@ -54,7 +54,7 @@ def create_app(
             raise HTTPException(status_code=400, detail=str(exc))
         return {"cases": [_normalized_case_dict(case) for case in cases]}
 
-    @app.post("/api/detect")
+    @app.post("/api/detect")  # type: ignore[misc]
     async def api_detect(request: Request) -> dict[str, object]:
         payload = await _read_input(request)
         settings = _settings_from_payload(payload)
@@ -64,7 +64,7 @@ def create_app(
             "cases": detect_cases(cases, settings, request.app.state.client_factory),
         }
 
-    @app.post("/api/correct")
+    @app.post("/api/correct")  # type: ignore[misc]
     async def api_correct(request: Request) -> dict[str, object]:
         payload = await _read_input(request)
         settings = _settings_from_payload(payload)
@@ -81,7 +81,7 @@ def create_app(
             "cases": result_cases,
         }
 
-    @app.post("/api/evaluate")
+    @app.post("/api/evaluate")  # type: ignore[misc]
     async def api_evaluate(request: Request) -> dict[str, object]:
         payload = await _read_input(request)
         cases = payload.get("cases")
@@ -90,7 +90,7 @@ def create_app(
         metrics = evaluate_case_results(_dict_cases(cases))
         return {"metrics": metrics}
 
-    @app.post("/api/run")
+    @app.post("/api/run")  # type: ignore[misc]
     async def api_run(request: Request) -> dict[str, object]:
         payload = await _read_input(request)
         try:

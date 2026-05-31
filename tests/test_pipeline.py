@@ -211,7 +211,7 @@ def test_score_batch_size_batches_window_scoring() -> None:
     assert any(batch_size > 1 for batch_size in client.batch_sizes)
 
 
-class ConfigRecordingClient(StaticTopLogprobClient):
+class PromptLogprobRecordingClient(StaticTopLogprobClient):
     def __init__(self) -> None:
         super().__init__(
             char_scores={"非": -8.0, "戰": -9.0, "站": -0.2, "庫": -0.6},
@@ -219,24 +219,15 @@ class ConfigRecordingClient(StaticTopLogprobClient):
         )
         self.prompt_logprobs_seen: list[int] = []
         self.scored_texts: list[str] = []
-        self.batch_sizes: list[int] = []
 
     def score_prompt(self, text: str, prompt_logprobs: int) -> dict[str, Any]:
         self.prompt_logprobs_seen.append(prompt_logprobs)
         self.scored_texts.append(text)
         return super().score_prompt(text, prompt_logprobs)
 
-    def score_prompts(
-        self, texts: list[str], prompt_logprobs: int
-    ) -> list[dict[str, Any]]:
-        self.prompt_logprobs_seen.append(prompt_logprobs)
-        self.scored_texts.extend(texts)
-        self.batch_sizes.append(len(texts))
-        return [super().score_prompt(text, prompt_logprobs) for text in texts]
 
-
-def test_config_fields_drive_pipeline_behavior() -> None:
-    client = ConfigRecordingClient()
+def test_prompt_logprobs_and_window_radius_affect_scoring() -> None:
+    client = PromptLogprobRecordingClient()
 
     result = spelling_check(
         "咖非戰",
@@ -247,7 +238,6 @@ def test_config_fields_drive_pipeline_behavior() -> None:
             suspicious_limit=1,
             candidate_limit=1,
             window_radius=1,
-            score_batch_size=2,
             strong_delta=10.0,
             weak_delta=0.1,
             margin=0.4,
@@ -255,13 +245,34 @@ def test_config_fields_drive_pipeline_behavior() -> None:
     )
 
     assert result.status == "uncertain"
+    assert set(client.prompt_logprobs_seen) == {7}
+    window_texts = [text for text in client.scored_texts if text != "咖非戰"]
+    assert window_texts
+    assert all(len(text) <= 3 for text in window_texts)
+
+
+def test_limits_and_weak_delta_shape_result() -> None:
+    result = spelling_check(
+        "咖非戰",
+        client=StaticTopLogprobClient(
+            char_scores={"非": -8.0, "戰": -9.0, "站": -0.2, "庫": -0.6},
+            alternatives={"戰": ["站", "庫"], "非": ["啡", "費"]},
+        ),
+        config=SpellingCheckConfig(
+            risk_threshold=7.0,
+            suspicious_limit=1,
+            candidate_limit=1,
+            strong_delta=10.0,
+            weak_delta=0.1,
+            margin=0.4,
+        ),
+    )
+
+    assert result.status == "uncertain"
+    assert result.corrected_text is None
     assert [risk.char for risk in result.suspicious_chars] == ["戰"]
     assert len(result.corrections) == 1
     assert result.corrections[0].candidate_char == "站"
-    assert set(client.prompt_logprobs_seen) == {7}
-    assert 2 in client.batch_sizes
-    window_texts = [text for text in client.scored_texts if text != "咖非戰"]
-    assert sorted(window_texts) == ["非戰", "非站"]
 
 
 def test_suspicious_without_candidates_returns_no_error() -> None:

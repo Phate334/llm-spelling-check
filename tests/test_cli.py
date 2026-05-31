@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from spelling_check import cli
 from spelling_check.models import CandidateCorrection, CharRisk, CorrectionResult
@@ -116,11 +116,36 @@ def test_parse_args_reads_environment_defaults(monkeypatch: Any) -> None:
 
 def test_cli_options_override_environment_and_feed_client_config(
     monkeypatch: Any,
+    capsys: Any,
 ) -> None:
+    captured: dict[str, object] = {}
+
+    class CapturingClient(DummyClient):
+        def __init__(self, **kwargs: Any) -> None:
+            super().__init__(**kwargs)
+            captured["client_kwargs"] = kwargs
+
+    def capturing_spelling_check(
+        text: str, client: object, config: SpellingCheckConfig
+    ) -> CorrectionResult:
+        captured["text"] = text
+        captured["client"] = client
+        captured["config"] = config
+        return CorrectionResult(
+            input=text,
+            status="no_error",
+            confidence="high",
+            corrected_text=text,
+            suspicious_chars=[],
+            corrections=[],
+        )
+
     monkeypatch.setenv("SPELLING_BASE_URL", "http://env.example/v1")
     monkeypatch.setenv("SPELLING_MODEL", "gemma-env")
     monkeypatch.setenv("SPELLING_API_KEY", "secret-from-env")
     monkeypatch.setenv("SPELLING_TIMEOUT", "12.5")
+    monkeypatch.setattr(cli, "VllmClient", CapturingClient)
+    monkeypatch.setattr(cli, "spelling_check", capturing_spelling_check)
     monkeypatch.setattr(
         sys,
         "argv",
@@ -157,15 +182,19 @@ def test_cli_options_override_environment_and_feed_client_config(
         ],
     )
 
-    args = cli.parse_args()
-    client = cli._build_client(args)
-    config = cli._build_config(args)
+    assert cli.main() == 0
 
-    assert args.json is True
-    assert client.base_url == "http://cli.example/v1"
-    assert client.model == "gemma-cli"
-    assert client.api_key == "cli-secret"
-    assert client.timeout == 8.5
+    output = json.loads(capsys.readouterr().out)
+    config = cast("SpellingCheckConfig", captured["config"])
+
+    assert output["input"] == "測試句子"
+    assert captured["text"] == "測試句子"
+    assert captured["client_kwargs"] == {
+        "base_url": "http://cli.example/v1",
+        "model": "gemma-cli",
+        "api_key": "cli-secret",
+        "timeout": 8.5,
+    }
     assert config.prompt_logprobs == 7
     assert config.risk_threshold == 8.0
     assert config.suspicious_limit == 2

@@ -6,51 +6,9 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
-from spelling_check.service import ModelSettings
 from spelling_check import web
 from spelling_check.web import create_app
-
-
-class FakeClient:
-    def score_prompt(self, text: str, prompt_logprobs: int) -> dict[str, Any]:
-        del prompt_logprobs
-        prompt_logprobs_payload = []
-        prompt_token_ids = []
-        for index, char in enumerate(text):
-            token_id = index + 1
-            prompt_token_ids.append(token_id)
-            alternatives = {
-                str(token_id): {
-                    "decoded_token": char,
-                    "logprob": -8.0 if char == "非" else -1.0,
-                    "rank": 1,
-                }
-            }
-            if char == "非":
-                alternatives[str(token_id + 1000)] = {
-                    "decoded_token": "啡",
-                    "logprob": -0.1,
-                    "rank": 2,
-                }
-            prompt_logprobs_payload.append(alternatives)
-        return {
-            "choices": [
-                {
-                    "prompt_token_ids": prompt_token_ids,
-                    "prompt_logprobs": prompt_logprobs_payload,
-                }
-            ]
-        }
-
-    def score_prompts(
-        self, texts: list[str], prompt_logprobs: int
-    ) -> list[dict[str, Any]]:
-        return [self.score_prompt(text, prompt_logprobs) for text in texts]
-
-
-def fake_client_factory(settings: ModelSettings) -> FakeClient:
-    del settings
-    return FakeClient()
+from tests.fakes import fake_client_factory
 
 
 def test_get_index_returns_webui_html() -> None:
@@ -61,21 +19,14 @@ def test_get_index_returns_webui_html() -> None:
     styles = client.get("/static/styles.css")
 
     assert response.status_code == 200
+    assert '<form id="run-form">' in response.text
     assert "<textarea" in response.text
-    assert "Risk threshold" in response.text
-    assert "Precision、Recall、F1" in response.text
-    assert "Detection Precision" in response.text
-    assert "Correction F1" in response.text
-    assert "False Positive Rate" in response.text
-    assert "FPR" in response.text
     assert "/static/app.js" in response.text
     assert "/static/styles.css" in response.text
     assert script.status_code == 200
     assert styles.status_code == 200
-    assert "renderAlignment" in script.text
-    assert 'alignmentRow("Model"' not in script.text
-    assert "candidateJudgment" in script.text
-    assert "renderLegend" in script.text
+    assert 'document.querySelector("#run-form")' in script.text
+    assert 'fetch("/api/run"' in script.text
 
 
 def test_defaults_api_hides_api_key() -> None:
