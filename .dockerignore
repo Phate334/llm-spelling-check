@@ -24,6 +24,7 @@ dist/
 docs/
 tests/
 vllm/
+data/
 AGENTS.md
 CHANGELOG.md
 CONTRIBUTING.md
@@ -32,4 +33,4 @@ compose.cpu.yaml
 compose.gpu.yaml
 Dockerfile
 
-# Keep the runtime image focused on the packaged app and small built-in sample data.
+# Keep runtime data outside the image and mount it via Compose.

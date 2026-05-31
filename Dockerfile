@@ -15,9 +15,11 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 FROM python:3.13-slim-bookworm
 
 RUN groupadd --system --gid 999 nonroot \
- && useradd --system --gid 999 --uid 999 --create-home nonroot
+    && useradd --system --gid 999 --uid 999 --create-home nonroot
 
 COPY --from=builder --chown=nonroot:nonroot /app /app
+RUN mkdir -p /app/data \
+    && chown nonroot:nonroot /app/data
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV SPELLING_BASE_URL="http://localhost:7072/v1"

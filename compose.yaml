@@ -4,6 +4,8 @@ services:
     init: true
     ports:
       - "8090:8000"
+    volumes:
+      - ./data:/app/data
     environment:
       SPELLING_BASE_URL: ${SPELLING_BASE_URL:-http://host.docker.internal:8001/v1}
       SPELLING_MODEL: ${SPELLING_MODEL:-gemma-3-270m}
